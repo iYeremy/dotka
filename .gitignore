@@ -1,0 +1,14 @@
+# Binaries
+/dotka
+/bin/
+/dist/
+*.test
+*.out
+
+# Local dev sandboxes (fake $HOME / store)
+/.sandbox/
+
+# Editors
+.vscode/
+.idea/
+*.swp
