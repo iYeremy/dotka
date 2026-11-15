@@ -4,7 +4,9 @@ package gen
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/iYeremy/dotka/internal/config"
@@ -18,17 +20,57 @@ const (
 	OriginManual       = "manual"
 	OriginPreRollback  = "auto: before rollback"
 	OriginPostRollback = "rollback"
+	OriginPreRun       = "auto: before run"
+	OriginRun          = "run"
 )
 
 // Generation is the manifest stored for each saved state.
 type Generation struct {
-	ID        int          `json:"id"`
-	Message   string       `json:"message,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	Origin    string       `json:"origin"`
-	Roots     []string     `json:"roots"`
-	Entries   []scan.Entry `json:"entries"`
+	ID        int       `json:"id"`
+	Message   string    `json:"message,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	Origin    string    `json:"origin"`
+	// Parent is the generation the home was based on when this one was
+	// taken (HEAD at that moment). 0 for the first one and old manifests.
+	Parent  int          `json:"parent,omitempty"`
+	Run     *RunInfo     `json:"run,omitempty"`
+	Roots   []string     `json:"roots"`
+	Entries []scan.Entry `json:"entries"`
 	Extra
+}
+
+// RunInfo records the command that produced a generation (`dotka run`).
+type RunInfo struct {
+	Command  []string `json:"command"`
+	Dir      string   `json:"dir"`
+	ExitCode int      `json:"exit_code"`
+	Before   int      `json:"before"` // generation taken right before running it
+}
+
+// Display returns the command in a short, readable form: the program path
+// is made relative to the directory it was run from, or abbreviated.
+func (r RunInfo) Display() string {
+	if len(r.Command) == 0 {
+		return ""
+	}
+	return strings.Join(append([]string{ShortPath(r.Command[0], r.Dir)}, r.Command[1:]...), " ")
+}
+
+// ShortPath abbreviates a program path for display.
+func ShortPath(p, dir string) string {
+	if !filepath.IsAbs(p) {
+		return p
+	}
+	if dir != "" {
+		if rel, err := filepath.Rel(dir, p); err == nil && !strings.HasPrefix(rel, "..") {
+			return "./" + rel
+		}
+	}
+	parts := strings.Split(p, "/")
+	if len(parts) > 3 {
+		return ".../" + strings.Join(parts[len(parts)-2:], "/")
+	}
+	return p
 }
 
 // State is the current (unsaved) state of the environment.
@@ -91,6 +133,12 @@ func (m *Manager) Current() (State, error) {
 // Snapshot scans the home, stores every file and saves a new generation,
 // which becomes HEAD. The caller must hold the store lock.
 func (m *Manager) Snapshot(message, origin string) (Generation, []scan.Warning, error) {
+	return m.SnapshotRun(message, origin, nil)
+}
+
+// SnapshotRun is Snapshot with information about the command that produced
+// the changes.
+func (m *Manager) SnapshotRun(message, origin string, run *RunInfo) (Generation, []scan.Warning, error) {
 	res, err := scan.Scan(scan.Options{Home: m.Home, Config: m.Config, Store: m.Store, Previous: m.previousIndex()})
 	if err != nil {
 		return Generation{}, nil, err
@@ -100,8 +148,9 @@ func (m *Manager) Snapshot(message, origin string) (Generation, []scan.Warning, 
 	if err != nil {
 		return Generation{}, nil, err
 	}
+	parent, _ := m.Store.Head()
 	g := Generation{
-		ID: id, Message: message, CreatedAt: m.now(), Origin: origin,
+		ID: id, Message: message, CreatedAt: m.now(), Origin: origin, Parent: parent, Run: run,
 		Roots: append([]string(nil), m.Config.Roots...), Entries: res.Entries, Extra: extra,
 	}
 	if err := m.Store.SaveGeneration(id, g); err != nil {
@@ -112,6 +161,24 @@ func (m *Manager) Snapshot(message, origin string) (Generation, []scan.Warning, 
 	}
 	m.Store.AppendLog(store.LogEntry{Op: "snap", Gen: id, Result: "ok", Details: message})
 	return g, append(res.Warnings, w...), nil
+}
+
+// Unsaved reports whether the home differs from the current generation.
+func (m *Manager) Unsaved() (bool, error) {
+	head, err := m.Store.Head()
+	if err != nil {
+		return false, err
+	}
+	base, err := m.Load(head)
+	if err != nil {
+		return false, err
+	}
+	cur, err := m.Current()
+	if err != nil {
+		return false, err
+	}
+	changes := FilterRoots(Diff(base.Entries, cur.Entries), base.Roots, cur.Roots)
+	return len(changes) > 0 || !DiffExtra(base.Extra, cur.Extra).Empty(), nil
 }
 
 // Load reads a generation.
