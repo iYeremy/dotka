@@ -1,6 +1,30 @@
-# dotka
+<p align="center">
+  <img src="docs/logo.png" alt="dotka" width="220">
+</p>
 
-**A time machine for your Linux user environment.**
+<p align="center">
+  <b>A time machine for your Linux user environment.</b><br>
+  <sub>Save points for your dotfiles, packages and everything that runs at login.</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/iYeremy/dotka/actions/workflows/ci.yml"><img src="https://github.com/iYeremy/dotka/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://aur.archlinux.org/packages/dotka-git"><img src="https://img.shields.io/aur/version/dotka-git?label=AUR&color=6c9a6b" alt="AUR"></a>
+  <a href="https://github.com/iYeremy/dotka/releases"><img src="https://img.shields.io/github/v/tag/iYeremy/dotka?label=release&color=6c9a6b" alt="release"></a>
+  <img src="https://img.shields.io/github/go-mod/go-version/iYeremy/dotka?color=6c9a6b" alt="go">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6c9a6b" alt="MIT"></a>
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> &nbsp;|&nbsp;
+  <a href="#try-it-without-touching-your-config">Try it</a> &nbsp;|&nbsp;
+  <a href="#the-interactive-ui">UI</a> &nbsp;|&nbsp;
+  <a href="#commands">Commands</a> &nbsp;|&nbsp;
+  <a href="docs/how-it-works.md">How it works</a> &nbsp;|&nbsp;
+  <a href="docs/guide.md">Guide</a>
+</p>
+
+---
 
 You found some sick Hyprland dotfiles, cloned the repo and ran `./install.sh`. Cool. Now,
 which of your files got overwritten? What packages did it pull? What's going to run every
