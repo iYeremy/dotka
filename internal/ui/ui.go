@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/charmbracelet/x/term"
 )
 
 var enabled = func() bool {
 	if os.Getenv("NO_COLOR") != "" {
 		return false
 	}
-	fi, err := os.Stdout.Stat()
-	return err == nil && fi.Mode()&os.ModeCharDevice != 0
+	return term.IsTerminal(os.Stdout.Fd())
 }()
 
 func wrap(code, s string) string {

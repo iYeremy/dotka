@@ -1,4 +1,4 @@
- dotka  /home/u  [read-only]                                     not set up yet 
+ dotka  /home/u                                                  not set up yet 
   1 Overview   2 Changes   3 History   4 Startup (5)   5 Health (3!)            
 --------------------------------------------------------------------------------
                                                                                 
@@ -7,8 +7,7 @@
   dotfiles, save a point; afterwards dotka shows exactly what changed (files,   
   packages, what runs at login) and lets you go back.                           
                                                                                 
-  This is your real home and dotka is still a prototype, so it is read-only     
-  here. You can still explore tabs 4 (Startup) and 5 (Health).                  
+  i set up dotka here (saves your current state as save point #1)               
                                                                                 
   Health                                                                        
     3 problems, 1 note   see tab 5                                              
@@ -20,5 +19,6 @@
                                                                                 
                                                                                 
                                                                                 
+                                                                                
 --------------------------------------------------------------------------------
- 1-5 tabs   r refresh   ? help   q quit                                         
+ 1-5 tabs   i set up   r refresh   ? help   q quit                              

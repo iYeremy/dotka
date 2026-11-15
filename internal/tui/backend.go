@@ -22,8 +22,8 @@ import (
 // mutated by the views.
 type Data struct {
 	Home        string
+	StoreDir    string
 	Sandbox     bool // home is not the user's real home
-	ReadOnly    bool // write actions are blocked (real home, prototype guard)
 	Initialized bool // a store exists
 
 	Head    gen.Generation   // current generation (zero if not initialized)
@@ -76,13 +76,10 @@ type Real struct {
 	Home     string
 	StoreDir string
 	RealHome bool
-	ReadOnly bool
 	// Collector gathers packages and the startup map for generations.
 	// Defaults to collect.Extra; tests may replace it.
 	Collector gen.Collector
 }
-
-var errReadOnly = errors.New("read-only: this is your real home and dotka is a prototype (see DOTKA_ALLOW_REAL_HOME)")
 
 func (r *Real) config() config.Config {
 	cfg, err := config.Load(r.StoreDir)
@@ -109,7 +106,7 @@ func (r *Real) manager() (*gen.Manager, error) {
 
 // Load reads the current state. It only reads.
 func (r *Real) Load() (*Data, error) {
-	d := &Data{Home: r.Home, Sandbox: !r.RealHome, ReadOnly: r.ReadOnly}
+	d := &Data{Home: r.Home, StoreDir: r.StoreDir, Sandbox: !r.RealHome}
 	d.Startup, _ = startup.Extract(r.Home)
 	in, err := doctor.Collect(r.Home, r.config())
 	if err != nil {
@@ -210,9 +207,6 @@ func prefixLines(s, p string) string {
 }
 
 func (r *Real) locked(f func(m *gen.Manager) (string, error)) (string, error) {
-	if r.ReadOnly {
-		return "", errReadOnly
-	}
 	m, err := r.manager()
 	if err != nil {
 		return "", err
@@ -238,9 +232,6 @@ func (r *Real) Snap(message string) (string, error) {
 
 // Init creates the store and the first generation.
 func (r *Real) Init() (string, error) {
-	if r.ReadOnly {
-		return "", errReadOnly
-	}
 	if _, err := store.Create(r.StoreDir); err != nil {
 		return "", err
 	}

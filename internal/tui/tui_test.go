@@ -242,9 +242,10 @@ func TestGoldenFrames80x24(t *testing.T) {
 	checkFrame(t, "toosmall", small, 50, 15)
 	golden(t, "toosmall", small)
 
-	be := &fakeBackend{data: &Data{Home: "/home/u", ReadOnly: true, Startup: sampleData().Startup, Findings: sampleData().Findings}}
+	be := &fakeBackend{data: &Data{Home: "/home/u", StoreDir: "/home/u/.local/share/dotka", Startup: sampleData().Startup, Findings: sampleData().Findings}}
 	fr := send(New(be), tea.WindowSizeMsg{Width: 80, Height: 24}, loadedMsg{data: be.data})
-	golden(t, "first-run-readonly", fr.View())
+	golden(t, "first-run", fr.View())
+	golden(t, "setup", send(fr, keys("i")...).View())
 }
 
 func TestTooSmallAndLoadingAndError(t *testing.T) {
@@ -321,25 +322,26 @@ func TestForgetRulesAndConfirm(t *testing.T) {
 	}
 }
 
-func TestReadOnlyBlocksWrites(t *testing.T) {
-	be := &fakeBackend{data: sampleData()}
-	be.data.ReadOnly, be.data.Sandbox = true, false
+func TestSetupShowsBetaNoticeAndNeedsConfirmation(t *testing.T) {
+	be := &fakeBackend{data: &Data{Home: "/home/u", StoreDir: "/home/u/.local/share/dotka"}}
 	m := send(New(be), tea.WindowSizeMsg{Width: 80, Height: 24}, loadedMsg{data: be.data})
-	for _, k := range []string{"s", "u"} {
-		m = send(m, keys("1", k)...)
-		if m.modal != modalNone || !strings.Contains(m.status, "Read-only") {
-			t.Errorf("%s must be blocked in read-only mode (modal=%v status=%q)", k, m.modal, m.status)
-		}
+	// Without setup, save/discard explain what to do instead of failing.
+	m = send(m, keys("s")...)
+	if m.modal != modalNone || !strings.Contains(m.status, "press i") {
+		t.Fatalf("s before setup: modal=%v status=%q", m.modal, m.status)
 	}
-	if len(be.snaps)+len(be.rollback) != 0 {
-		t.Fatal("no write must reach the backend")
-	}
-	// Not set up + read-only: i (set up) is blocked too.
-	be2 := &fakeBackend{data: &Data{Home: "/home/u", ReadOnly: true}}
-	m = send(New(be2), tea.WindowSizeMsg{Width: 80, Height: 24}, loadedMsg{data: be2.data})
 	m = send(m, keys("i")...)
-	if m.modal != modalNone || be2.inits != 0 || !strings.Contains(m.status, "Read-only") {
-		t.Errorf("i must be blocked in read-only mode (modal=%v status=%q)", m.modal, m.status)
+	v := m.View()
+	if m.modal != modalInit || !strings.Contains(v, "beta") || !strings.Contains(v, "/home/u/.local/share/dotka") {
+		t.Fatalf("i must show the beta notice with the store path:\n%s", v)
+	}
+	m = send(m, keys("n")...)
+	if be.inits != 0 {
+		t.Fatal("n must not set up")
+	}
+	send(m, keys("i", "y")...)
+	if be.inits != 1 {
+		t.Fatal("y must set up")
 	}
 }
 

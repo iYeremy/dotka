@@ -1,0 +1,24 @@
+ dotka  /home/u                                                  not set up yet 
+  1 Overview   2 Changes   3 History   4 Startup (5)   5 Health (3!)            
+--------------------------------------------------------------------------------
+                                                                                
+                                                                                
+    +----------------------------------------------------------------------+    
+    | Set up dotka (beta)                                                  |    
+    |                                                                      |    
+    | Heads up: dotka is beta software. Here's exactly what happens:       |    
+    |   - creates a private store at                                       |    
+    |     /home/u/.local/share/dotka                                       |    
+    |   - copies your tracked config files into it (secrets skipped)       |    
+    |   - saves that as save point #1                                      |    
+    |                                                                      |    
+    | None of your files change now. Later, only going back and forgetting |    
+    | change things, and both show a plan and ask first.                   |    
+    |                                                                      |    
+    | y set up   n cancel                                                  |    
+    +----------------------------------------------------------------------+    
+                                                                                
+                                                                                
+                                                                                
+--------------------------------------------------------------------------------
+ y confirm   n cancel                                                           

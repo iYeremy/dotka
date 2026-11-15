@@ -18,7 +18,7 @@ func TestRealBackendRender(t *testing.T) {
 	if home == "" {
 		t.Skip("set DOTKA_TUI_TEST_HOME to a sandbox home")
 	}
-	be := &Real{Home: home, StoreDir: filepath.Join(home, ".local/share/dotka"), ReadOnly: true}
+	be := &Real{Home: home, StoreDir: filepath.Join(home, ".local/share/dotka")}
 	d, err := be.Load()
 	if err != nil {
 		t.Fatal(err)

@@ -89,8 +89,6 @@ func (m Model) header() string {
 	switch {
 	case d.Sandbox:
 		tag = "  " + sAccent.Render("[sandbox]")
-	case d.ReadOnly:
-		tag = "  " + sModified.Render("[read-only]")
 	}
 	home := d.Home
 	if h, err := os.UserHomeDir(); err == nil && !d.Sandbox && strings.HasPrefix(home, h) {
@@ -200,13 +198,7 @@ func (m Model) overview() []string {
 			add(in + l)
 		}
 		add("")
-		if d.ReadOnly {
-			for _, l := range wrap("This is your real home and dotka is still a prototype, so it is read-only here. You can still explore tabs 4 (Startup) and 5 (Health).", w) {
-				add(in + sModified.Render(l))
-			}
-		} else {
-			add(in + keyHint("i", "set up dotka here (saves your current state as save point #1)"))
-		}
+		add(in + keyHint("i", "set up dotka here (saves your current state as save point #1)"))
 		add("")
 	} else {
 		title := fmt.Sprintf("Unsaved changes since save point #%d", d.Head.ID)
@@ -269,9 +261,6 @@ func (m Model) overview() []string {
 	case !d.Initialized:
 		add(in + "  " + keyHint("4", "see what runs automatically when you log in"))
 		add(in + "  " + keyHint("5", "check your configuration for problems"))
-	case d.ReadOnly:
-		add(in + "  " + keyHint("2", "review the changes", "4", "startup", "5", "health"))
-		add(in + "  " + sMuted.Render("Saving and going back are disabled on your real home (read-only)."))
 	case d.Unsaved() > 0:
 		add(in + "  " + keyHint("s", "save the current state as a new save point"))
 		add(in + "  " + keyHint("u", fmt.Sprintf("discard these changes and go back to #%d", d.Head.ID)))
@@ -468,10 +457,12 @@ func (m Model) modalView(h int) []string {
 		add("", "> "+string(m.input)+"_", "")
 		add(keyHint("enter", "save", "esc", "cancel"))
 	case modalInit:
-		title = "Set up dotka"
-		p("Dotka will create its private store in:")
-		add("  "+sMuted.Render(m.data.Home+"/.local/share/dotka"), "")
-		p("and save your current configuration as save point #1. Nothing in your configuration is changed.")
+		title = "Set up dotka (beta)"
+		p("Heads up: dotka is beta software. Here's exactly what happens:")
+		add("  - creates a private store at", "    "+sMuted.Render(m.data.StoreDir),
+			"  - copies your tracked config files into it (secrets skipped)",
+			"  - saves that as save point #1", "")
+		p("None of your files change now. Later, only going back and forgetting change things, and both show a plan and ask first.")
 		add("", keyHint("y", "set up", "n", "cancel"))
 	case modalForget:
 		title = fmt.Sprintf("Forget save point #%d?", m.target)
@@ -593,16 +584,14 @@ func (m Model) footer() string {
 		hints = []string{"j/k", "scroll", "tab/esc", "back to list"}
 	case m.tab == tabOverview:
 		hints = []string{"1-5", "tabs"}
-		if m.data.ReadOnly {
-			// no write actions to advertise
-		} else if m.data.Initialized {
+		if m.data.Initialized {
 			hints = append(hints, "s", "save", "u", "discard changes")
-		} else if !m.data.ReadOnly {
+		} else {
 			hints = append(hints, "i", "set up")
 		}
-	case m.tab == tabHistory && !m.data.ReadOnly:
+	case m.tab == tabHistory:
 		hints = []string{"j/k", "move", "b", "go back here", "x", "forget"}
-	case m.tab == tabChanges && !m.data.ReadOnly:
+	case m.tab == tabChanges:
 		hints = []string{"j/k", "move", "tab", "detail", "s", "save", "u", "discard all"}
 	default:
 		hints = []string{"j/k", "move", "tab", "detail"}
