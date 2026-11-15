@@ -3,6 +3,7 @@ package secrets
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -42,6 +43,32 @@ func TestCheckContent(t *testing.T) {
 		os.WriteFile(p, []byte(content[name]), 0o600)
 		if got, why := CheckContent(p); got != want {
 			t.Errorf("%s: got %v (%s), want %v", name, got, why, want)
+		}
+	}
+}
+
+// The literal prefilter must never hide a match: every pattern's regexp
+// must only match text that contains one of its hints.
+func TestHintsCoverEveryPattern(t *testing.T) {
+	samples := map[string]string{
+		"private key":         "-----BEGIN RSA PRIVATE KEY-----",
+		"GitHub token":        "x ghs_abcdefghijklmnopqrstuvwxyz0123456789 y",
+		"GitLab token":        "glpat-abcdefghijklmnopqrstu",
+		"Slack token":         "xoxb-1234567890-abc",
+		"AWS access key":      "AKIAABCDEFGHIJKLMNOP",
+		"API key":             "sk-ant-abcdefghijklmnopqrstuvwxyz",
+		"password assignment": "PassWord: hunter22",
+	}
+	for _, p := range contentPatterns {
+		s, ok := samples[p.name]
+		if !ok {
+			t.Fatalf("no sample for pattern %q", p.name)
+		}
+		if !p.re.MatchString(s) {
+			t.Fatalf("sample for %q does not match its regexp", p.name)
+		}
+		if !containsAny([]byte(strings.ToLower(s)), p.hints) {
+			t.Errorf("pattern %q: hints %v would skip a real match", p.name, p.hints)
 		}
 	}
 }

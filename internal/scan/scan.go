@@ -41,6 +41,9 @@ type Entry struct {
 	Stored bool   `json:"stored,omitempty"`
 	Skip   string `json:"skip,omitempty"`
 	Reason string `json:"reason,omitempty"`
+	// Clean records that the content passed the secret check (it is false
+	// for files the user explicitly allowed, which were never checked).
+	Clean bool `json:"clean,omitempty"`
 }
 
 // Restorable reports whether Dotka can recreate this entry exactly.
@@ -184,14 +187,26 @@ func entryFor(opt Options, full, rel string, d fs.DirEntry) (Entry, bool, error)
 		return Entry{}, false, nil
 	}
 
+	prev, hasPrev := opt.Previous[rel]
+	unchanged := hasPrev && prev.Type == TypeFile && prev.Size == e.Size && prev.MTime == e.MTime && prev.Mode == e.Mode
 	if !opt.Config.SecretAllowed(rel) {
 		if ok, why := secrets.CheckPath(rel); ok {
 			e.Skip, e.Reason = SkipSecret, why
 			return e, true, nil
 		}
-		if ok, why := secrets.CheckContent(full); ok {
-			e.Skip, e.Reason = SkipSecret, why
+		switch {
+		case unchanged && prev.Skip == SkipSecret:
+			e.Skip, e.Reason = SkipSecret, prev.Reason
 			return e, true, nil
+		case unchanged && prev.Clean:
+			// Same content as last time, which passed the check.
+			e.Clean = true
+		default:
+			if ok, why := secrets.CheckContent(full); ok {
+				e.Skip, e.Reason = SkipSecret, why
+				return e, true, nil
+			}
+			e.Clean = true
 		}
 	}
 

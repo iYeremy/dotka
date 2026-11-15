@@ -148,3 +148,39 @@ func TestUnreadableDirIsWarningNotFailure(t *testing.T) {
 		t.Fatal("expected a warning for the unreadable directory")
 	}
 }
+
+func TestSecretCheckCacheAndDeny(t *testing.T) {
+	h := t.TempDir()
+	os.MkdirAll(filepath.Join(h, ".config/mail"), 0o755)
+	p := filepath.Join(h, ".config/mail/conf")
+	os.WriteFile(p, []byte("server = x\n"), 0o644)
+	cfg := config.Default()
+	cfg.Roots = []string{".config"}
+	r1, _ := Scan(Options{Home: h, Config: cfg})
+	if e := Index(r1.Entries)[".config/mail/conf"]; !e.Clean || e.Skip != "" {
+		t.Fatalf("clean file: %+v", e)
+	}
+	// Unchanged file: the cached clean result is reused.
+	r2, _ := Scan(Options{Home: h, Config: cfg, Previous: Index(r1.Entries)})
+	if !Index(r2.Entries)[".config/mail/conf"].Clean {
+		t.Fatal("clean flag not carried over")
+	}
+	// A secret is added: the file changes, so it is re-checked.
+	os.WriteFile(p, []byte("server = x\npassword = hunter22\n"), 0o644)
+	r3, _ := Scan(Options{Home: h, Config: cfg, Previous: Index(r2.Entries)})
+	if Index(r3.Entries)[".config/mail/conf"].Skip != SkipSecret {
+		t.Fatal("changed file with a secret must be detected")
+	}
+	// Allowed, then denied without touching the file: must be detected
+	// again (an allowed file is never marked clean).
+	cfg.AllowSecrets = []string{".config/mail/conf"}
+	r4, _ := Scan(Options{Home: h, Config: cfg, Previous: Index(r3.Entries)})
+	if e := Index(r4.Entries)[".config/mail/conf"]; e.Skip != "" || e.Clean {
+		t.Fatalf("allowed secret: %+v", e)
+	}
+	cfg.AllowSecrets = nil
+	r5, _ := Scan(Options{Home: h, Config: cfg, Previous: Index(r4.Entries)})
+	if Index(r5.Entries)[".config/mail/conf"].Skip != SkipSecret {
+		t.Fatal("denied again but not re-detected")
+	}
+}
