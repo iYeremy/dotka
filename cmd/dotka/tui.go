@@ -8,8 +8,8 @@ import (
 	"github.com/iYeremy/dotka/internal/tui"
 )
 
-// cmdTUI opens the interactive interface. On the real home it is read-only
-// while dotka is a prototype (same rule as the write commands).
+// cmdTUI opens the interactive interface. Setting dotka up from the UI shows
+// the same beta notice and confirmation as `dotka init`.
 func cmdTUI(e env) error {
 	if !isTerminal(os.Stdout) || !isTerminal(os.Stdin) {
 		return fmt.Errorf("the interface needs an interactive terminal; use the commands instead (dotka help)")
