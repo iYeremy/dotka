@@ -41,8 +41,9 @@ go build -o dotka ./cmd/dotka
 scripts/sandbox.sh setup
 eval "$(scripts/sandbox.sh env)"   # points dotka at .sandbox/home
 ./dotka init
-scripts/sandbox.sh install         # the "third-party installer"
-./dotka status                     # files, packages, services, startup
+./dotka run -- .sandbox/super-rice/install.sh   # run the "third-party installer" through dotka
+./dotka why waybar                 # who added it? -> by `.../super-rice/install.sh`
+./dotka doctor                     # health check
 ./dotka diff --patch --path hypr
 ./dotka rollback 1                 # preview → confirm → restore
 ./dotka rollback 2                 # undo the rollback
@@ -61,6 +62,8 @@ unless you set `DOTKA_ALLOW_REAL_HOME=1`.
 |---|---|
 | `init` | create the store and generation #1 |
 | `snap -m MSG` | save a generation |
+| `run [-m MSG] -- CMD...` | snapshot, run CMD, snapshot, show what CMD changed (attributed to CMD) |
+| `why THING` | where a file, package or startup item came from |
 | `status` | changes since the current generation |
 | `diff [A [B]] [--path P] [--patch]` | compare generations or a generation with now |
 | `rollback N [--dry-run] [--yes] [--keep-new]` | restore generation N (reversible) |
