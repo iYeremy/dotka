@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 
 	"github.com/iYeremy/dotka/internal/config"
@@ -15,7 +16,19 @@ import (
 	"github.com/iYeremy/dotka/internal/store"
 )
 
-var version = "0.1.0-dev"
+// version is set at build time: -ldflags "-X main.version=0.1.0".
+// `go install ...@v0.1.0` builds get it from the module info instead.
+var version = ""
+
+func versionString() string {
+	if version != "" {
+		return version
+	}
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		return strings.TrimPrefix(bi.Main.Version, "v")
+	}
+	return "dev"
+}
 
 const usage = `dotka - a time machine for your Linux user environment
 
@@ -135,7 +148,7 @@ func run(args []string) error {
 	case "gc":
 		return cmdGC(e, cargs)
 	case "version", "--version":
-		fmt.Println("dotka", version)
+		fmt.Println("dotka", versionString())
 		return nil
 	case "help", "-h", "--help":
 		fmt.Print(usage)
