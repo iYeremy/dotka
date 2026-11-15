@@ -154,7 +154,7 @@ func hyprLua(home string) ([]gen.StartupItem, []Warning) {
 				}
 				items = append(items, gen.StartupItem{
 					Kind: kind, Command: unquoteLua(cmd), Source: rel(home, path), Line: i + 1,
-					Confidence: conf, Risk: Risk(unquoteLua(cmd)),
+					Confidence: conf, Risk: Risk(unquoteLua(cmd)), Dynamic: !isLuaStringLiteral(cmd),
 				})
 			}
 			// Track block nesting to know when hl.on(...) blocks end.

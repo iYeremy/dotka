@@ -67,6 +67,8 @@ func Default() Config {
 			"Service Worker", "IndexedDB", "Local Storage", "Session Storage",
 			"blob_storage", "Crashpad", "DawnCache", "DawnGraphiteCache", "DawnWebGPUCache", "GrShaderCache",
 			"ShaderCache", "logs", "node_modules", "__pycache__", ".git",
+			// Chromium/Electron runtime locks (symlinks that are "broken" by design).
+			"SingletonCookie", "SingletonLock", "SingletonSocket",
 		},
 		MaxFileSize: 10 << 20,
 	}

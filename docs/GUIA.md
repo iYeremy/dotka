@@ -55,6 +55,7 @@ Guardas partida  ->  pruebas los dotfiles de alguien  ->  Dotka te dice qué cam
 | `dotka show 3` | Resumen de un punto: cuántos archivos, paquetes y elementos de arranque tiene. |
 | `dotka rollback 1` | Volver al punto `#1`. Primero muestra el plan y pide confirmación. `--dry-run` solo muestra el plan, `--keep-new` conserva los archivos nuevos y `-y` no pregunta. |
 | `dotka startup` | Ver todo lo que se ejecuta solo al iniciar sesión o abrir una terminal. **Solo lee**: es seguro usarlo en tu configuración real. |
+| `dotka doctor` | Chequeo de salud de tu configuración. **Solo lee** y funciona sin `init`. Busca: programas que se lanzan al iniciar pero no están instalados, scripts de arranque que descargan y ejecutan código o usan `sudo`, symlinks rotos, archivos secretos que otros usuarios pueden leer, programas lanzados dos veces y configuraciones que quedaron de programas desinstalados. |
 | `dotka track` | Ver qué se rastrea. `track add .local/share/nvim` añade una carpeta y `track rm` la quita. |
 | `dotka secrets` | Ver qué archivos se excluyeron por parecer secretos. `secrets allow RUTA` permite guardar uno. |
 | `dotka forget 3` | Borrar un punto de guardado que ya no necesitas. Libera el espacio de las copias que **solo** usaba ese punto. Tus archivos no se tocan; solo pierdes la posibilidad de volver a ese punto. No se puede borrar el punto actual. |
@@ -97,6 +98,7 @@ Startup   +6  -2                     cosas nuevas que se ejecutarán / que dejar
 | `[risk: downloads and runs code]` | Descarga código de internet y lo ejecuta (`curl ... \| sh`). Es la señal más seria. |
 | `[risk: runs a local script]` | Ejecuta un script guardado en tu home. Conviene leerlo. |
 | `[heuristic]` | Detección por patrón: puede equivocarse |
+| `[problem]` / `[note]` (en `doctor`) | Algo que conviene arreglar / algo que conviene revisar |
 | `[secret]` | Archivo con pinta de contraseña o token: no se guarda |
 | `warning:` | Aviso que no detiene el comando |
 
@@ -134,6 +136,14 @@ Cuidado con `~` en los argumentos: la shell lo convierte en tu home real. Usa ru
 ./dotka secrets      # .config/gh/hosts.yml detectado y NO guardado
 ./dotka track        # qué vigila Dotka
 ```
+
+### 5.1b Chequeo de salud
+
+```bash
+./dotka doctor       # antes del instalador: casi limpio
+```
+
+Después del paso 5.2 vuelve a ejecutarlo. Debería detectar el script `rice-autoupdate.sh`, que descarga código en cada inicio de sesión, los programas que el instalador lanza pero no están instalados y el `hosts.yml` con permisos abiertos. `doctor` también se puede usar sobre tu configuración real, porque no modifica nada.
 
 ### 5.2 Simular que instalas los dotfiles de otra persona
 

@@ -18,6 +18,8 @@ import (
 // Source lists installed packages.
 type Source interface {
 	Snapshot() (*gen.Packages, error)
+	// All lists every installed package, including dependencies.
+	All() ([]string, error)
 }
 
 // ErrUnavailable means no supported package manager was found.
@@ -58,6 +60,13 @@ func (Pacman) Snapshot() (*gen.Packages, error) {
 	return &gen.Packages{Manager: "pacman", Explicit: explicit, Foreign: foreign}, nil
 }
 
+func (Pacman) All() ([]string, error) {
+	if _, err := exec.LookPath("pacman"); err != nil {
+		return nil, ErrUnavailable
+	}
+	return pacmanQuery("-Qq")
+}
+
 func pacmanQuery(flag string) ([]string, error) {
 	cmd := exec.Command("pacman", flag)
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
@@ -89,6 +98,14 @@ func ParseList(s string) []string {
 
 // FileSource reads a fake package list (for tests and demos).
 type FileSource struct{ Path string }
+
+func (f FileSource) All() ([]string, error) {
+	p, err := f.Snapshot()
+	if err != nil {
+		return nil, err
+	}
+	return p.Explicit, nil
+}
 
 func (f FileSource) Snapshot() (*gen.Packages, error) {
 	b, err := os.ReadFile(f.Path)
