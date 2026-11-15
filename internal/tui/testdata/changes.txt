@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+ > Unsaved changes                   | .config/hypr/hyprland.lua                
+                                     |                                          
+ Files (4)                           | Modified                                 
+ > ~ .config/hypr/hyprland.lua       | Its content changed. Going back restores 
+   ~ .config/kitty/kitty.conf [!]... | the saved version.                       
+   + .config/waybar/ 2 files         |                                          
+   + .local/bin/rice-autoupdate.sh   | --- saved                                
+ Packages (3)                        | +++ now                                  
+   + cava                            | @@ -1,3 +1,4 @@                          
+   + swww                            |  hl.on("hyprland.start", function()      
+   + waybar                          | -    hl.exec_cmd("qs -p ~/.config/quic...
+ Runs at startup (4)                 | +    hl.exec_cmd("waybar")               
+   +     waybar                      | +    hl.exec_cmd("swww-daemon")          
+   + [?] ~/.local/bin/rice-autoup... |  end)                                    
+   + [!] eval "$(curl -fsSL https... |                                          
+   -     qs -p ~/.config/quickshe... |                                          
+                                     |                                          
+                                     |                                          
+                                     |                                          
+--------------------------------------------------------------------------------
+ j/k move   tab detail   s save   u discard all   r refresh   ? help   q quit   

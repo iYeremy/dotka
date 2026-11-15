@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+                                                                                
+  Unsaved changes since save point #1 "initial state"  saved Nov 14 19:46       
+                                                                                
+    Files     +2   ~2   -0                                                      
+    Packages  +3        -0                                                      
+    Startup   +3        -1   [!] 1 new item(s) download and run code            
+                                                                                
+  Health                                                                        
+    3 problems, 1 note   see tab 5                                              
+                                                                                
+  What you can do                                                               
+    s save the current state as a new save point                                
+    u discard these changes and go back to #1                                   
+    2 review the changes one by one                                             
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+--------------------------------------------------------------------------------
+ 1-5 tabs   s save   u discard changes   r refresh   ? help   q quit            

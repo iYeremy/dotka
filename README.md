@@ -56,10 +56,36 @@ it prints everything that runs at login or shell start.
 While dotka is a prototype, write commands refuse to run on your real home
 unless you set `DOTKA_ALLOW_REAL_HOME=1`.
 
+## Interactive interface (TUI)
+
+Run `dotka` with no arguments in a terminal (or `dotka tui`). Five tabs answer the
+questions you have after trying someone's dotfiles: **Overview** (how am I?),
+**Changes** (what changed?), **History** (my save points), **Startup** (what runs by
+itself?) and **Health** (is anything broken?). The detail pane explains each item in
+plain words, and every action asks for confirmation first.
+
+| Key | Action |
+|---|---|
+| `1`-`5`, left/right | switch tab |
+| `j`/`k`, up/down | move (or scroll the detail) |
+| `tab`, `enter` / `esc` | list <-> detail / back |
+| `s` | save a point |
+| `u` | discard unsaved changes |
+| `b` / `x` | History: go back to / forget the selected save point |
+| `i` | set dotka up (first time) |
+| `r`, `?`, `q` | refresh, help, quit (`ctrl+c` always quits) |
+
+Terminal contract: requires a TTY of at least **70x20**. The output is ASCII-only and
+uses the 16 ANSI colors, so it works on the Linux console, inside tmux and over SSH;
+it honors `NO_COLOR` (meaning is never carried by color alone). No mouse support yet.
+On your real home it opens **read-only** while dotka is a prototype.
+Design and real screenshots: [docs/TUI.md](docs/TUI.md).
+
 ## Commands
 
 | Command | What it does |
 |---|---|
+| *(no command)*, `tui` | open the interactive interface |
 | `init` | create the store and generation #1 |
 | `snap -m MSG` | save a generation |
 | `run [-m MSG] -- CMD...` | snapshot, run CMD, snapshot, show what CMD changed (attributed to CMD) |

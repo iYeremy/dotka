@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+                                                                                
+    +----------------------------------------------------------------------+    
+    | Keys                                                                 |    
+    |                                                                      |    
+    | 1-5  left/right  switch tab                                          |    
+    | j/k  up/down     move in the list (or scroll the detail)             |    
+    | tab  enter       move between the list and the detail                |    
+    | esc              back to the list / close                            |    
+    | s                save the current state as a save point              |    
+    | u                discard unsaved changes                             |    
+    | b                History: go back to the selected save point         |    
+    | x                History: forget the selected save point             |    
+    | i                set dotka up (first time)                           |    
+    | r                refresh                                             |    
+    | q  ctrl+c        quit                                                |    
+    |                                                                      |    
+    | Every change asks first, and going back can always be undone.        |    
+    +----------------------------------------------------------------------+    
+                                                                                
+--------------------------------------------------------------------------------
+ any key close                                                                  

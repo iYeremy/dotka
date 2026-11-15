@@ -1,0 +1,15 @@
+                                                  
+                                                  
+                                                  
+                                                  
+                Terminal too small                
+                                                  
+  dotka needs at least 70x20, this one is 50x15.  
+     Make the window bigger, or use the dotka     
+              commands (dotka help).              
+                                                  
+                      q quit                      
+                                                  
+                                                  
+                                                  
+                                                  
