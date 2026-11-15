@@ -290,6 +290,8 @@ func cmdLog(e env, args []string) error {
 		fmt.Printf("%s%s  %s  %-22s %s\n", mark, ui.Bold(fmt.Sprintf("#%-3d", g.ID)),
 			g.CreatedAt.Local().Format("2006-01-02 15:04"), ui.Dim(g.Origin), g.Message)
 	}
+	fmt.Println(ui.Dim(fmt.Sprintf("\n%d generation(s), store uses %s. `dotka prune` or `dotka forget N` frees space.",
+		len(gens), humanSize(m.Store.Size()))))
 	return nil
 }
 
@@ -481,7 +483,12 @@ func cmdGC(e env, args []string) error {
 		return err
 	}
 	m.Store.AppendLog(store.LogEntry{Op: "gc", Result: "ok", Details: fmt.Sprintf("%d objects", n)})
-	fmt.Printf("Removed %d unreferenced object(s), %s freed.\n", n, humanSize(b))
+	if n == 0 {
+		fmt.Println("Nothing to clean: every stored copy is used by some generation.")
+		fmt.Println(ui.Dim("To free space, forget old generations: `dotka prune --keep 10` or `dotka forget N`."))
+		return nil
+	}
+	fmt.Printf("Removed %d unused stored copies, %s freed.\n", n, humanSize(b))
 	return nil
 }
 

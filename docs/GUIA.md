@@ -57,9 +57,23 @@ Guardas partida  ->  pruebas los dotfiles de alguien  ->  Dotka te dice qué cam
 | `dotka startup` | Ver todo lo que se ejecuta solo al iniciar sesión o abrir una terminal. **Solo lee**: es seguro usarlo en tu configuración real. |
 | `dotka track` | Ver qué se rastrea. `track add .local/share/nvim` añade una carpeta y `track rm` la quita. |
 | `dotka secrets` | Ver qué archivos se excluyeron por parecer secretos. `secrets allow RUTA` permite guardar uno. |
-| `dotka gc` | Limpiar del almacén las copias que ya no usa ningún punto de guardado. |
+| `dotka forget 3` | Borrar un punto de guardado que ya no necesitas. Libera el espacio de las copias que **solo** usaba ese punto. Tus archivos no se tocan; solo pierdes la posibilidad de volver a ese punto. No se puede borrar el punto actual. |
+| `dotka prune --keep 10` | Conservar solo los 10 puntos más recientes (más el actual) y olvidar el resto. |
+| `dotka gc` | Mantenimiento: borra copias que no usa ningún punto (por ejemplo, restos de un `snap` interrumpido). Normalmente no hace falta, porque `forget` y `prune` ya liberan el espacio. |
 
 ---
+
+### ¿Cómo se ocupa y se libera el espacio?
+
+Cada punto de guardado es una **lista** que dice "mi `hyprland.lua` es la copia A, mi `.zshrc` es la copia B…". Las copias se guardan una sola vez aunque muchas listas las usen:
+
+```
+#1  hyprland.lua -> copia A    .zshrc -> copia B
+#2  hyprland.lua -> copia C    .zshrc -> copia B   (B se comparte, no se duplica)
+#3  hyprland.lua -> copia C    .zshrc -> copia D
+```
+
+Si haces `dotka forget 1`, la copia **A** ya no la usa nadie y se borra. La copia **B** se queda porque #2 la sigue usando. Por eso olvidar un punto a veces libera poco: casi todo se comparte con los demás. `dotka log` muestra al final cuánto ocupa el almacén.
 
 ## 4. Cómo leer lo que imprime Dotka
 
@@ -175,7 +189,7 @@ Que los paquetes sigan apareciendo es **lo esperado**: Dotka nunca los toca, sol
 | Simular pacman | Edita `.sandbox/packages.txt` (añade ` aur` para los del AUR) y luego `status` | Paquetes añadidos o quitados |
 | Permisos | `chmod 600 $DOTKA_HOME/.zshrc` y luego `status` | `(mode 644 -> 600)`, y volver atrás lo corrige |
 | Symlink roto | `ln -s /no/existe $DOTKA_HOME/.config/roto`, luego `snap` y `rollback` | Se guarda y restaura como symlink |
-| Limpieza | `./dotka gc` | Borra copias que ya nadie usa |
+| Olvidar puntos | `./dotka log`, luego `./dotka forget 2 --dry-run` y `./dotka prune --keep 2` | Muestra cuánto libera. Nunca deja borrar el punto actual y los números no se reutilizan |
 
 ### 5.6 Empezar de cero
 
