@@ -263,10 +263,6 @@ func (m Model) compareWithNow(g gen.Generation) [3]int {
 func (m Model) handleAction(key string) (tea.Model, tea.Cmd) {
 	d := m.data
 	needWrite := func() bool {
-		if d.ReadOnly {
-			m.setStatus("Read-only: this is your real home. Use the sandbox, or set DOTKA_ALLOW_REAL_HOME=1.", false)
-			return false
-		}
 		if !d.Initialized {
 			m.setStatus("Dotka is not set up here yet: press i to create your first save point.", false)
 			return false
@@ -276,10 +272,6 @@ func (m Model) handleAction(key string) (tea.Model, tea.Cmd) {
 	switch key {
 	case "i":
 		if d.Initialized {
-			return m, nil
-		}
-		if d.ReadOnly {
-			m.setStatus("Read-only: this is your real home. Use the sandbox, or set DOTKA_ALLOW_REAL_HOME=1.", false)
 			return m, nil
 		}
 		m.modal = modalInit

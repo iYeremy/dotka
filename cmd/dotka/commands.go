@@ -16,7 +16,40 @@ import (
 	"github.com/iYeremy/dotka/internal/ui"
 )
 
+// betaNotice is shown before dotka starts managing a real home.
+const betaNotice = `Heads up: dotka is beta software, so here's exactly what happens.
+
+It will:
+  - create a private store at %s
+  - copy your tracked config files into it (files that look like secrets are skipped)
+  - save that as save point #1
+
+It will NOT change any of your files now. Later, only "rollback" and "forget"
+change things, and both show you the plan and ask first.
+
+`
+
 func cmdInit(e env, args []string) error {
+	fs := flag.NewFlagSet("init", flag.ContinueOnError)
+	yes := fs.Bool("yes", false, "skip the confirmation (for scripts)")
+	fs.BoolVar(yes, "y", false, "short for --yes")
+	if _, err := interspersed(fs, args); err != nil {
+		return err
+	}
+	if _, err := store.Open(e.storeDir); err == nil {
+		return fmt.Errorf("dotka is already set up here (store at %s)", e.storeDir)
+	}
+	if e.realHome && !*yes {
+		fmt.Printf(betaNotice, e.storeDir)
+		if !stdinIsTerminal() {
+			return fmt.Errorf("not an interactive terminal: run `dotka init --yes` to confirm")
+		}
+		if !confirm("Set up dotka for " + e.home + "?") {
+			fmt.Println("Ok, nothing was done.")
+			return nil
+		}
+		fmt.Println()
+	}
 	s, err := store.Create(e.storeDir)
 	if err != nil {
 		return err

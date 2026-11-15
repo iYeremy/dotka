@@ -43,34 +43,43 @@ func isolate(t *testing.T) (realHome string) {
 	t.Setenv("XDG_DATA_HOME", "")
 	t.Setenv("DOTKA_HOME", "")
 	t.Setenv("DOTKA_STORE", "")
-	t.Setenv("DOTKA_ALLOW_REAL_HOME", "")
 	t.Setenv("DOTKA_PACKAGES", "off")
+	old := stdinIsTerminal
+	stdinIsTerminal = func() bool { return false } // tests behave like scripts
+	t.Cleanup(func() { stdinIsTerminal = old })
 	return realHome
 }
 
-func TestGuardBlocksWritesOnRealHome(t *testing.T) {
+func TestInitOnRealHomeNeedsExplicitConfirmation(t *testing.T) {
 	real := isolate(t)
-	for _, args := range [][]string{{"init"}, {"snap"}, {"rollback", "1"}, {"gc"}, {"track", "add", ".x"}, {"secrets", "allow", ".x"}} {
-		_, err := capture(t, args...)
-		if err == nil || !strings.Contains(err.Error(), "refusing") {
-			t.Errorf("%v on real home: expected refusal, got %v", args, err)
-		}
+	// Tests have no interactive stdin: init must refuse and ask for --yes.
+	out, err := capture(t, "init")
+	if err == nil || !strings.Contains(err.Error(), "--yes") {
+		t.Fatalf("expected a request for --yes, got %v", err)
+	}
+	if !strings.Contains(out, "beta software") || !strings.Contains(out, "will NOT change any of your files") {
+		t.Errorf("the beta notice must explain what happens:\n%s", out)
 	}
 	if _, err := os.Stat(filepath.Join(real, ".local/share/dotka")); err == nil {
-		t.Fatal("a store was created in the real home")
+		t.Fatal("a store was created without confirmation")
 	}
-	// Read-only commands are allowed.
+	// Read-only commands work without setup.
 	if _, err := capture(t, "startup"); err != nil {
-		t.Errorf("startup should work on the real home: %v", err)
+		t.Errorf("startup should work without setup: %v", err)
 	}
-	// Explicit opt-in works.
-	t.Setenv("DOTKA_ALLOW_REAL_HOME", "1")
-	if _, err := capture(t, "init"); err != nil {
-		t.Errorf("init with DOTKA_ALLOW_REAL_HOME=1: %v", err)
+	if _, err := capture(t, "init", "--yes"); err != nil {
+		t.Fatalf("init --yes: %v", err)
+	}
+	// Once set up, the store is the consent: normal commands just work.
+	if _, err := capture(t, "snap", "-m", "x"); err != nil {
+		t.Fatalf("snap after setup: %v", err)
+	}
+	if _, err := capture(t, "init", "--yes"); err == nil {
+		t.Fatal("a second init must fail")
 	}
 }
 
-func TestGuardAllowsOtherHomes(t *testing.T) {
+func TestOtherHomesNeedNoConfirmation(t *testing.T) {
 	isolate(t)
 	fake := t.TempDir()
 	if _, err := capture(t, "--home", fake, "init"); err != nil {
