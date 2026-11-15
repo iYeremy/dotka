@@ -2,13 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
 
 	"github.com/iYeremy/dotka/internal/config"
 	"github.com/iYeremy/dotka/internal/doctor"
-	"github.com/iYeremy/dotka/internal/pkgs"
-	"github.com/iYeremy/dotka/internal/scan"
-	"github.com/iYeremy/dotka/internal/startup"
 	"github.com/iYeremy/dotka/internal/ui"
 )
 
@@ -18,21 +14,14 @@ func cmdDoctor(e env, args []string) error {
 	if c, err := config.Load(e.storeDir); err == nil {
 		cfg = c
 	}
-	res, err := scan.Scan(scan.Options{Home: e.home, Config: cfg, NoHash: true})
+	in, err := doctor.Collect(e.home, cfg)
 	if err != nil {
 		return err
-	}
-	items, _ := startup.Extract(e.home)
-	in := doctor.Input{Home: e.home, Entries: res.Entries, Startup: items, LookPath: exec.LookPath}
-	if src := pkgs.FromEnv(); src != nil {
-		if all, err := src.All(); err == nil {
-			in.Packages = all
-		}
 	}
 	findings := doctor.Run(in)
 
 	fmt.Printf("%s %s\n", ui.Bold("Checking"), e.home)
-	fmt.Println(ui.Dim(fmt.Sprintf("  %d tracked entries, %d startup items. Read-only: nothing is changed.", len(res.Entries), len(items))))
+	fmt.Println(ui.Dim(fmt.Sprintf("  %d tracked entries, %d startup items. Read-only: nothing is changed.", len(in.Entries), len(in.Startup))))
 	if len(findings) == 0 {
 		fmt.Println("\nNo problems found.")
 		return nil
