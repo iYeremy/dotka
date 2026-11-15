@@ -8,6 +8,7 @@ import (
 	"github.com/iYeremy/dotka/internal/doctor"
 	"github.com/iYeremy/dotka/internal/gen"
 	"github.com/iYeremy/dotka/internal/scan"
+	"github.com/iYeremy/dotka/internal/startup"
 )
 
 // buildRows derives the list rows of every tab from the data. Pure.
@@ -73,11 +74,11 @@ func (m *Model) buildRows() {
 	}
 
 	// Startup, grouped.
-	groups := []string{"Hyprland", "User services", "Desktop autostart", "Shell", "X11 session"}
+	groups := startup.Groups()
 	byGroup := map[string][]row{}
 	for i := range d.Startup {
 		s := &d.Startup[i]
-		g := startupGroup(s.Kind)
+		g := startup.Group(s.Kind)
 		byGroup[g] = append(byGroup[g], row{startup: s, text: startupLine(*s)})
 	}
 	for _, g := range groups {
@@ -160,20 +161,6 @@ func findingLine(f doctor.Finding) string {
 		mark = sDanger.Render("[x]")
 	}
 	return mark + " " + fmt.Sprintf("%-18s", checkTitle(f.Check)) + " " + sMuted.Render(where)
-}
-
-func startupGroup(kind string) string {
-	switch {
-	case strings.HasPrefix(kind, "hypr"):
-		return "Hyprland"
-	case kind == "systemd-user":
-		return "User services"
-	case kind == "xdg-autostart":
-		return "Desktop autostart"
-	case kind == "x11-exec":
-		return "X11 session"
-	}
-	return "Shell"
 }
 
 func plural(n int, w string) string {

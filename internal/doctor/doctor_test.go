@@ -159,3 +159,23 @@ func TestLeftoverConfigs(t *testing.T) {
 		t.Error("without package info, leftovers must not be guessed")
 	}
 }
+
+func TestUnsupportedWMAndXDGConfigHome(t *testing.T) {
+	home := t.TempDir()
+	os.MkdirAll(filepath.Join(home, ".config/qtile"), 0o755)
+	os.WriteFile(filepath.Join(home, ".config/qtile/config.py"), []byte("# python\n"), 0o644)
+	os.MkdirAll(filepath.Join(home, ".config/sway"), 0o755)
+	os.WriteFile(filepath.Join(home, ".config/sway/config"), []byte("exec waybar\n"), 0o644)
+	in := Input{Home: home, XDGConfigHome: filepath.Join(home, "dots/config")}
+	m := byCheck(Run(in))
+	if u := m["unsupported-wm"]; len(u) != 1 || !strings.Contains(u[0].Message, "Qtile") {
+		t.Errorf("unsupported: %+v", u)
+	}
+	if x := m["xdg-config-home"]; len(x) != 1 || x[0].Hint != "track it too: dotka track add dots/config" {
+		t.Errorf("xdg: %+v", x)
+	}
+	in.XDGConfigHome = filepath.Join(home, ".config")
+	if len(byCheck(Run(in))["xdg-config-home"]) != 0 {
+		t.Error("XDG_CONFIG_HOME = ~/.config must not be reported")
+	}
+}

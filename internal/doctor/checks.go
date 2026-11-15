@@ -249,3 +249,37 @@ func matchesPackage(name string, pkgs []string) bool {
 	}
 	return false
 }
+
+// unsupportedWMs: window managers whose autostart dotka cannot read.
+func unsupportedWMs(in Input) []Finding {
+	var out []Finding
+	for _, d := range startup.Detect(in.Home) {
+		if d.Supported {
+			continue
+		}
+		out = append(out, Finding{
+			Severity: Note, Check: "unsupported-wm", Path: d.Path,
+			Message: d.Name + " config found, but dotka can't read its autostart yet (it's code, not a config format)",
+			Hint:    "programs it starts at login won't show up in `dotka startup`; check that config yourself",
+		})
+	}
+	return out
+}
+
+// xdgConfigHome: dotka assumes ~/.config. If XDG_CONFIG_HOME points
+// elsewhere, say so (it is rare, but then save points miss your config).
+func xdgConfigHome(in Input) []Finding {
+	x := in.XDGConfigHome
+	if x == "" || filepath.Clean(x) == filepath.Join(in.Home, ".config") {
+		return nil
+	}
+	hint := "dotka only knows ~/.config for now; your config there is not tracked"
+	if r, err := filepath.Rel(in.Home, x); err == nil && !strings.HasPrefix(r, "..") {
+		hint = "track it too: dotka track add " + r
+	}
+	return []Finding{{
+		Severity: Note, Check: "xdg-config-home", Path: x,
+		Message: "XDG_CONFIG_HOME is set to " + x + ", but dotka assumes ~/.config",
+		Hint:    hint,
+	}}
+}
