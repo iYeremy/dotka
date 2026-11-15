@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/iYeremy/dotka/internal/config"
 	"github.com/iYeremy/dotka/internal/secrets"
@@ -44,6 +45,12 @@ type Entry struct {
 	// Clean records that the content passed the secret check (it is false
 	// for files the user explicitly allowed, which were never checked).
 	Clean bool `json:"clean,omitempty"`
+}
+
+// NixManaged reports whether the entry is a link into the Nix store, i.e.
+// owned by home-manager / NixOS. Dotka shows these but never changes them.
+func (e Entry) NixManaged() bool {
+	return e.Type == TypeSymlink && strings.HasPrefix(e.Target, "/nix/store/")
 }
 
 // Restorable reports whether Dotka can recreate this entry exactly.

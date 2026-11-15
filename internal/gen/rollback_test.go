@@ -3,6 +3,7 @@ package gen
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/iYeremy/dotka/internal/scan"
@@ -241,5 +242,41 @@ func TestRollbackIgnoresRootsNotTrackedInTarget(t *testing.T) {
 	}
 	if !exists(m.Home, ".local/share/nvim/init.lua") {
 		t.Fatal("rollback removed files from a root that was not tracked in the target")
+	}
+}
+
+// On NixOS/home-manager, links into /nix/store belong to Nix: rollback must
+// never recreate, retarget or remove them.
+func TestRollbackLeavesNixStoreLinksAlone(t *testing.T) {
+	m := setupBase(t)
+	os.Symlink("/nix/store/aaa-hm-files/kitty.conf", filepath.Join(m.Home, ".config/kitty/nix.conf"))
+	g1, _, _ := m.Snapshot("", OriginManual)
+	// home-manager switch: retargets one link and adds another.
+	os.Remove(filepath.Join(m.Home, ".config/kitty/nix.conf"))
+	os.Symlink("/nix/store/bbb-hm-files/kitty.conf", filepath.Join(m.Home, ".config/kitty/nix.conf"))
+	os.Symlink("/nix/store/bbb-hm-files/foot.ini", filepath.Join(m.Home, ".config/foot.ini"))
+	write(t, m.Home, ".zshrc", "changed\n") // an imperative change: restored as usual
+
+	res, err := m.Rollback(g1.ID, false)
+	if err != nil || len(res.Failures) > 0 {
+		t.Fatalf("rollback: %v %+v", err, res.Failures)
+	}
+	if tgt, _ := os.Readlink(filepath.Join(m.Home, ".config/kitty/nix.conf")); tgt != "/nix/store/bbb-hm-files/kitty.conf" {
+		t.Errorf("nix link was retargeted to %q", tgt)
+	}
+	if !exists(m.Home, ".config/foot.ini") {
+		t.Error("nix link added by home-manager was removed")
+	}
+	if read(t, m.Home, ".zshrc") != "echo hi\n" {
+		t.Error("imperative file not restored")
+	}
+	n := 0
+	for _, s := range res.Plan.Skipped {
+		if strings.Contains(s.Reason, "Nix") {
+			n++
+		}
+	}
+	if n != 2 {
+		t.Errorf("expected 2 nix skips, got %+v", res.Plan.Skipped)
 	}
 }

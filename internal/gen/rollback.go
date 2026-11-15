@@ -103,6 +103,9 @@ func BuildPlan(target Generation, curRoots []string, current []scan.Entry, opt P
 		switch {
 		case opt.KeepNew:
 			blocked[p] = true
+		case c.NixManaged():
+			blocked[p] = true
+			plan.Skipped = append(plan.Skipped, Skipped{p, nixReason})
 		case !restorable(c):
 			blocked[p] = true
 			plan.Skipped = append(plan.Skipped, Skipped{p, "added after target but not stored (" + skipWhy(c) + "); kept"})
@@ -122,6 +125,11 @@ func BuildPlan(target Generation, curRoots []string, current []scan.Entry, opt P
 		}
 		if exists && c.Type == t.Type && c.SameContent(t) {
 			plan.Actions = append(plan.Actions, Action{Kind: ActChmod, Path: p, Want: &t, Reason: "mode changed"})
+			continue
+		}
+		if t.NixManaged() || (exists && c.NixManaged()) {
+			plan.Skipped = append(plan.Skipped, Skipped{p, nixReason})
+			blocked[p] = true
 			continue
 		}
 		if !t.Restorable() {
@@ -180,6 +188,9 @@ func BuildPlan(target Generation, curRoots []string, current []scan.Entry, opt P
 	sort.Slice(plan.Skipped, func(i, j int) bool { return plan.Skipped[i].Path < plan.Skipped[j].Path })
 	return plan
 }
+
+// nixReason explains why links into the Nix store are left alone.
+const nixReason = "managed by Nix/home-manager (link into /nix/store); use home-manager to change it"
 
 func hasBlockedChild(blocked map[string]bool, dir string) bool {
 	for p := range blocked {
