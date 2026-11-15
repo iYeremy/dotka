@@ -8,7 +8,5 @@
 # Local dev sandboxes (fake $HOME / store)
 /.sandbox/
 
-# Editors
-.vscode/
-.idea/
-*.swp
+# notes lol
+notes/
