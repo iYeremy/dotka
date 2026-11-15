@@ -53,7 +53,7 @@ func renderChanges(changes []gen.Change, limit int) {
 			if c.Kind == gen.Removed {
 				sign, color = "-", ui.Red
 			}
-			fmt.Printf("  %s %s/ %s\n", color(sign), c.Path, ui.Dim(fmt.Sprintf("(%d files)", n)))
+			fmt.Printf("  %s %s/ %s\n", color(sign), c.Path, ui.Dim("("+plural(n, "file")+")"))
 			i = j - 1
 			shown++
 			continue
@@ -146,4 +146,11 @@ func formatStartup(s gen.StartupItem) string {
 		out += " " + ui.Yellow("⚠ local script")
 	}
 	return out
+}
+
+func plural(n int, word string) string {
+	if n == 1 {
+		return "1 " + word
+	}
+	return fmt.Sprintf("%d %ss", n, word)
 }

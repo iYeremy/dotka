@@ -29,14 +29,52 @@ dotka rollback 1                    # go back (the rollback itself is reversible
 - Every rollback first snapshots the current state: nothing is ever truly deleted.
 - Honest reporting: confirmed detections vs. heuristics.
 
+## Try it safely (sandbox)
+
+Dotka is a prototype: try it on a **fake home**, never on your real one.
+`scripts/sandbox.sh` builds a fake Hyprland (Lua config) home and a fake
+third-party `install.sh` that overwrites configs, adds packages, a user service,
+an autostart entry and a `curl | sh` in `.zshrc`.
+
+```bash
+go build -o dotka ./cmd/dotka
+scripts/sandbox.sh setup
+eval "$(scripts/sandbox.sh env)"   # points dotka at .sandbox/home
+./dotka init
+scripts/sandbox.sh install         # the "third-party installer"
+./dotka status                     # files, packages, services, startup
+./dotka diff --patch --path hypr
+./dotka rollback 1                 # preview → confirm → restore
+./dotka rollback 2                 # undo the rollback
+scripts/sandbox.sh clean
+```
+
+`dotka startup` only reads files, so it is safe to run on your real home:
+it prints everything that runs at login or shell start.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `init` | create the store and generation #1 |
+| `snap -m MSG` | save a generation |
+| `status` | changes since the current generation |
+| `diff [A [B]] [--path P] [--patch]` | compare generations or a generation with now |
+| `rollback N [--dry-run] [--yes] [--keep-new]` | restore generation N (reversible) |
+| `log`, `show N` | list / inspect generations |
+| `startup` | startup map: Hyprland (Lua and conf), XDG autostart, systemd --user, shell rc |
+| `track ls/add/rm PATH` | manage tracked roots |
+| `secrets ls/allow/deny PATH` | files excluded because they look like credentials |
+| `gc` | delete unreferenced objects |
+
 ## Development
 
 ```bash
 go test ./...
-go build ./cmd/dotka
-# Always try it against a fake home, never your real one:
-./dotka --home /tmp/fakehome --store /tmp/fakestore init
 ```
+
+Branches: `feat/…`, `fix/…`, `chore/…`, `docs/…`, merged into `main` with `--no-ff`.
+Commits: `type: short description` (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`).
 
 Project analysis (Spanish): [docs/ANALISIS.md](docs/ANALISIS.md)
 
