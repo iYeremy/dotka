@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -27,6 +28,8 @@ Commands:
   status                   what changed since the current generation
   diff [A [B]] [--path P] [--patch]
                            compare generations (default: HEAD vs now)
+  rollback N [--dry-run] [--yes] [--keep-new]
+                           restore generation N (reversible)
   log                      list generations
   show N                   details of a generation
   track [ls|add|rm] [PATH] manage tracked roots
@@ -83,6 +86,8 @@ func run(args []string) error {
 		return cmdStatus(e, cargs)
 	case "diff":
 		return cmdDiff(e, cargs)
+	case "rollback":
+		return cmdRollback(e, cargs)
 	case "log":
 		return cmdLog(e, cargs)
 	case "show":
@@ -153,6 +158,8 @@ func (e env) managerWith(s *store.Store, cfg config.Config) *gen.Manager {
 	}
 	return &gen.Manager{Home: e.home, Store: s, Config: cfg, Collector: collector}
 }
+
+var lookPath = exec.LookPath
 
 // collector gathers packages and the startup map. Set in collect.go.
 var collector gen.Collector
