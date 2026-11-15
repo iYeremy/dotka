@@ -128,7 +128,7 @@ func renderPlan(p gen.Plan, keepNew bool) {
 // runs package managers; it only prints commands for the user to review.
 func renderRollbackExtra(d gen.ExtraDiff) {
 	if len(d.PkgAdded)+len(d.PkgRemoved) > 0 {
-		fmt.Printf("\n%s Packages are NOT changed by Dotka. Review and run yourself:\n", ui.Bold("Packages"))
+		fmt.Printf("\n%s %s\n", ui.Bold("Packages"), ui.Dim("— Dotka never changes packages. Review and run yourself:"))
 		// d is computed current → target: "added" means the target has
 		// packages that are missing now; "removed" means installed since.
 		if len(d.PkgRemoved) > 0 {
