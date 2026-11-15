@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+ > Save points (newest first)        | #2 super-rice                            
+                                     |                                          
+     #3   Nov 14 20:06  before ro... | Created   2026-11-14 19:56               
+ >   #2   Nov 14 19:56  super-rice   | How       created by `dotka run` after   
+   * #1   Nov 14 19:46  initial s... |           running:                       
+                                     |           ./super-rice/install.sh        
+                                     | Contains  2 files, 2 packages, 0 startup 
+                                     |           items                          
+                                     |                                          
+                                     | Going back here would                    
+                                     |   ~ revert 1 file                        
+                                     |   - remove 3 newer files                 
+                                     |                                          
+                                     | b go back here   x forget this save point
+                                     |                                          
+                                     |                                          
+                                     |                                          
+                                     |                                          
+                                     |                                          
+--------------------------------------------------------------------------------
+ j/k move   b go back here   x forget   r refresh   ? help   q quit             

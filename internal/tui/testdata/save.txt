@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+    +----------------------------------------------------------------------+    
+    | Save a point                                                         |    
+    |                                                                      |    
+    | Describe this save point (optional), for example: before trying X's  |    
+    | dots                                                                 |    
+    |                                                                      |    
+    | > before_                                                            |    
+    |                                                                      |    
+    | enter save   esc cancel                                              |    
+    +----------------------------------------------------------------------+    
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+--------------------------------------------------------------------------------
+ enter save   esc cancel                                                        

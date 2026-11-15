@@ -1,0 +1,24 @@
+ dotka  /home/u  [read-only]                                     not set up yet 
+  1 Overview   2 Changes   3 History   4 Startup (5)   5 Health (3!)            
+--------------------------------------------------------------------------------
+                                                                                
+  Welcome to dotka                                                              
+  Dotka keeps save points of your Linux configuration. Before trying someone's  
+  dotfiles, save a point; afterwards dotka shows exactly what changed (files,   
+  packages, what runs at login) and lets you go back.                           
+                                                                                
+  This is your real home and dotka is still a prototype, so it is read-only     
+  here. You can still explore tabs 4 (Startup) and 5 (Health).                  
+                                                                                
+  Health                                                                        
+    3 problems, 1 note   see tab 5                                              
+                                                                                
+  What you can do                                                               
+    4 see what runs automatically when you log in                               
+    5 check your configuration for problems                                     
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+--------------------------------------------------------------------------------
+ 1-5 tabs   r refresh   ? help   q quit                                         

