@@ -20,9 +20,11 @@ var version = "0.1.0-dev"
 const usage = `dotka - a time machine for your Linux user environment
 
 Usage:
+  dotka                    open the interactive interface (in a terminal)
   dotka [--home DIR] [--store DIR] <command> [args]
 
 Commands:
+  tui                      open the interactive interface
   init                     create the store and generation #1
   snap [-m MSG]            save a new generation
   status                   what changed since the current generation
@@ -86,19 +88,25 @@ func run(args []string) error {
 		return err
 	}
 	rest := g.Args()
-	if len(rest) == 0 {
-		fmt.Print(usage)
-		return nil
-	}
 	e, err := resolveEnv(*homeFlag, *storeFlag)
 	if err != nil {
 		return err
+	}
+	if len(rest) == 0 {
+		// Interactive terminal: open the interface. Pipes/scripts: help.
+		if isTerminal(os.Stdout) && isTerminal(os.Stdin) {
+			return cmdTUI(e)
+		}
+		fmt.Print(usage)
+		return nil
 	}
 	cmd, cargs := rest[0], rest[1:]
 	if err := guardRealHome(e, cmd, cargs); err != nil {
 		return err
 	}
 	switch cmd {
+	case "tui":
+		return cmdTUI(e)
 	case "init":
 		return cmdInit(e, cargs)
 	case "snap", "snapshot":
