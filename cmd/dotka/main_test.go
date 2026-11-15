@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -136,5 +137,56 @@ func TestFullFlowOutputIsASCII(t *testing.T) {
 		if !strings.Contains(s, want) {
 			t.Errorf("expected %q in output", want)
 		}
+	}
+}
+
+// TestRunRedirectsHomeAndRecordsCommand checks that `dotka run` points the
+// command at the managed home (never the real one), records the command
+// and propagates its exit status.
+func TestRunRedirectsHomeAndRecordsCommand(t *testing.T) {
+	real := isolate(t)
+	home := t.TempDir()
+	t.Setenv("DOTKA_HOME", home)
+	put(t, home, ".zshrc", "export A=1\n")
+	put(t, home, ".config/kitty/kitty.conf", "font_size 11\n")
+	if _, err := capture(t, "init"); err != nil {
+		t.Fatal(err)
+	}
+	script := `mkdir -p "$HOME/.config/fromrun" && echo hi > "$HOME/.config/fromrun/conf" && echo "$XDG_CONFIG_HOME" > "$HOME/.config/fromrun/xdg"`
+	out, err := capture(t, "run", "-m", "test run", "--", "sh", "-c", script)
+	if err != nil {
+		t.Fatalf("run: %v\n%s", err, out)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".config/fromrun/conf")); err != nil {
+		t.Fatal("command did not write into the managed home")
+	}
+	if _, err := os.Stat(filepath.Join(real, ".config/fromrun")); err == nil {
+		t.Fatal("command wrote into the REAL home")
+	}
+	xdg, _ := os.ReadFile(filepath.Join(home, ".config/fromrun/xdg"))
+	if strings.TrimSpace(string(xdg)) != filepath.Join(home, ".config") {
+		t.Errorf("XDG_CONFIG_HOME not redirected: %q", xdg)
+	}
+	if !strings.Contains(out, "+ .config/fromrun/") {
+		t.Errorf("run summary missing the new dir:\n%s", out)
+	}
+	why, err := capture(t, "why", "fromrun/conf")
+	if err != nil || !strings.Contains(why, "by `sh -c") {
+		t.Errorf("why did not attribute to the command: %v\n%s", err, why)
+	}
+	for i, r := range out + why {
+		if r > 0x7f {
+			t.Fatalf("non-ASCII output at %d", i)
+		}
+	}
+	// Exit status is propagated (and the changes are still recorded).
+	_, err = capture(t, "run", "--", "sh", "-c", "echo x > $HOME/.config/partial; exit 3")
+	var ee exitError
+	if !errors.As(err, &ee) || ee.code != 3 {
+		t.Fatalf("expected exit status 3, got %v", err)
+	}
+	why, _ = capture(t, "why", ".config/partial")
+	if !strings.Contains(why, "added") {
+		t.Errorf("changes of a failed command must be recorded:\n%s", why)
 	}
 }

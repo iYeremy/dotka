@@ -38,6 +38,8 @@ Guardas partida  ->  pruebas los dotfiles de alguien  ->  Dotka te dice qué cam
 | **Mapa de arranque (startup)** | La lista de todo lo que se ejecuta solo: lo que lanza Hyprland al iniciar, los servicios de usuario de systemd, el autostart del escritorio y ciertas líneas de tu `.zshrc`. Es lo más importante de vigilar después de instalar dotfiles ajenos. |
 | **Paquetes** | Los programas instalados con pacman o un helper del AUR. Dotka **solo los lee**: nunca instala ni desinstala nada, y nunca usa `sudo`. Te sugiere los comandos para que los ejecutes tú. |
 | **Volver atrás (rollback)** | Devolver tus archivos rastreados al estado de una generación: restaura lo modificado, recrea lo borrado y quita lo que se añadió después. |
+| **Procedencia** | Saber qué comando introdujo cada cambio. Funciona cuando instalas con `dotka run`: esa partida queda asociada al comando. Es algo que git no puede hacer. |
+| **Padre** | La partida de la que partió otra. Si vuelves a `#2` y guardas, la nueva partida tiene como padre a `#2`. Así `why` no confunde un rollback con un borrado. |
 | **Heurística** | Una detección "por patrón" en vez de segura. Por ejemplo, adivinar que una línea de `.zshrc` ejecuta algo. Dotka la marca como `[heuristic]` para que sepas que puede equivocarse. |
 | **Sandbox** | Un home de mentira (`.sandbox/home`) para probar Dotka sin tocar tu configuración real. |
 
@@ -49,6 +51,8 @@ Guardas partida  ->  pruebas los dotfiles de alguien  ->  Dotka te dice qué cam
 |---|---|
 | `dotka init` | La primera vez: crea el almacén y guarda el punto `#1` con tu estado actual. |
 | `dotka snap -m "mensaje"` | Guardar partida. Por ejemplo: `snap -m "antes de probar los dots de X"`. |
+| `dotka run -- ./install.sh` | La forma recomendada de probar dotfiles ajenos: guarda partida (si hay cambios sin guardar), **ejecuta el comando** que le pases, guarda otra partida asociada a ese comando y te muestra qué cambió. El comando se ejecuta de verdad, no está aislado. Si Dotka apunta a un home que no es el tuyo (el sandbox), el comando también ve ese home como su `$HOME`. |
+| `dotka why waybar` | "¿De dónde salió esto?". Busca un archivo, paquete o elemento de arranque en la historia y dice quién lo introdujo: un comando lanzado con `dotka run`, un cambio hecho fuera de Dotka, o que ya estaba al empezar. |
 | `dotka status` | "¿Qué cambió desde mi último punto de guardado?": archivos, paquetes y lo que se ejecuta al iniciar. |
 | `dotka diff` | Más detalle. Sin números compara el último punto con ahora. `diff 1 3` compara dos puntos. `--patch` muestra las líneas cambiadas. `--path hypr` filtra por carpeta. |
 | `dotka log` | Lista de todos tus puntos de guardado. |
@@ -147,16 +151,27 @@ Después del paso 5.2 vuelve a ejecutarlo. Debería detectar el script `rice-aut
 
 ### 5.2 Simular que instalas los dotfiles de otra persona
 
+El sandbox incluye un repo de dotfiles falso en `.sandbox/super-rice/`. Instálalo a través de Dotka:
+
 ```bash
-scripts/sandbox.sh install
-./dotka status
+./dotka run -- .sandbox/super-rice/install.sh
 ```
+
+Al terminar, Dotka muestra qué cambió ese comando. (Alternativa sin procedencia: `scripts/sandbox.sh install` y después `./dotka status`).
 
 Esperado: `hyprland.lua` modificado, `waybar/` nuevo, tu `kitty.conf` reemplazado por un symlink, 4 paquetes nuevos y en el arranque `waybar`, `swww-daemon`, un servicio, un autostart y un `curl` remoto en `.zshrc`, marcado como `[risk: downloads and runs code]`. También verás `-2` en Startup: el instalador **quitó** quickshell y nm-applet de tu arranque sin avisar.
 
 ```bash
 ./dotka diff --patch --path hypr
 ./dotka diff --patch --path .zshrc
+```
+
+### 5.2b Preguntar de dónde salió algo
+
+```bash
+./dotka why waybar               # el paquete, su config y la entrada de arranque: by `.../install.sh`
+./dotka why kitty/kitty.conf     # estaba al inicio; el instalador lo convirtió en symlink
+./dotka why .zshrc
 ```
 
 ### 5.3 Volver atrás
@@ -176,6 +191,8 @@ cat $DOTKA_HOME/.config/hypr/hyprland.lua   # vuelven quickshell y nm-applet
 ```
 
 Que los paquetes sigan apareciendo es **lo esperado**: Dotka nunca los toca, solo te muestra el comando `sudo pacman -Rns ...` para que lo ejecutes tú.
+
+Vuelve a ejecutar `./dotka why waybar` después del rollback. El paquete aparece como `still installed`, "kept after going back", porque Dotka nunca desinstala paquetes. La línea `now:` dice si cada cosa existe en la partida actual.
 
 ### 5.4 Deshacer la vuelta atrás
 
