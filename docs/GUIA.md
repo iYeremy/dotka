@@ -80,6 +80,23 @@ Cada punto de guardado es una **lista** que dice "mi `hyprland.lua` es la copia 
 
 Si haces `dotka forget 1`, la copia **A** ya no la usa nadie y se borra. La copia **B** se queda porque #2 la sigue usando. Por eso olvidar un punto a veces libera poco: casi todo se comparte con los demás. `dotka log` muestra al final cuánto ocupa el almacén.
 
+### La interfaz interactiva (TUI)
+
+Si ejecutas `dotka` sin nada más (o `dotka tui`) se abre una interfaz con cinco pestañas:
+
+| Pestaña | Para qué |
+|---|---|
+| `1` Overview | Resumen: ¿hay cambios sin guardar?, ¿algún problema?, ¿qué puedo hacer ahora? |
+| `2` Changes | Cada cambio desde tu último punto de guardado, con su explicación y su diff |
+| `3` History | Tus puntos de guardado. `b` vuelve a uno y `x` lo olvida |
+| `4` Startup | Todo lo que se ejecuta solo, explicado en lenguaje simple |
+| `5` Health | Lo mismo que `dotka doctor`, con qué significa cada problema y qué hacer |
+
+Te mueves con `j`/`k` (o las flechas), pasas al detalle con `Tab`, guardas con `s` y la
+ayuda está en `?`. Antes de cambiar cualquier cosa, siempre te pide confirmación. Sobre
+tu home real se abre en **solo lectura**. Capturas reales y el diseño completo, en
+[TUI.md](TUI.md).
+
 ## 4. Cómo leer lo que imprime Dotka
 
 ```
