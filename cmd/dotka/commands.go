@@ -31,7 +31,7 @@ func cmdInit(e env, args []string) error {
 		return err
 	}
 	defer unlock()
-	fmt.Printf("Store created at %s\nScanning %s …\n", e.storeDir, e.home)
+	fmt.Printf("Store created at %s\nScanning %s ...\n", e.storeDir, e.home)
 	g, warns, err := m.Snapshot("initial state", gen.OriginInit)
 	if err != nil {
 		return err
@@ -84,10 +84,10 @@ func printSnapSummary(g gen.Generation, warns []scan.Warning) {
 	}
 	fmt.Println(") saved.")
 	if secrets > 0 {
-		fmt.Printf("  %s %d file(s) look like secrets and were NOT stored (see `dotka secrets`)\n", ui.Yellow("⚠"), secrets)
+		fmt.Printf("  %s %d file(s) look like secrets and were NOT stored (see `dotka secrets`)\n", ui.Yellow("warning:"), secrets)
 	}
 	if large > 0 {
-		fmt.Printf("  %s %d file(s) exceed max_file_size and cannot be restored\n", ui.Yellow("⚠"), large)
+		fmt.Printf("  %s %d file(s) exceed max_file_size and cannot be restored\n", ui.Yellow("warning:"), large)
 	}
 	printWarnings(warns)
 }
@@ -95,10 +95,10 @@ func printSnapSummary(g gen.Generation, warns []scan.Warning) {
 func printWarnings(warns []scan.Warning) {
 	for i, w := range warns {
 		if i == 5 {
-			fmt.Printf("  %s … and %d more warnings\n", ui.Yellow("⚠"), len(warns)-5)
+			fmt.Printf("  %s ... and %d more\n", ui.Yellow("warning:"), len(warns)-5)
 			break
 		}
-		fmt.Printf("  %s %s: %v\n", ui.Yellow("⚠"), w.Path, w.Err)
+		fmt.Printf("  %s %s: %v\n", ui.Yellow("warning:"), w.Path, w.Err)
 	}
 }
 
@@ -132,7 +132,7 @@ func cmdStatus(e env, args []string) error {
 	}
 	renderChanges(changes, 25)
 	renderExtra(ed)
-	fmt.Printf("\nRun `dotka snap -m \"…\"` to keep this, or `dotka rollback %d` to undo.\n", base.ID)
+	fmt.Printf("\nRun `dotka snap -m \"...\"` to keep this, or `dotka rollback %d` to undo.\n", base.ID)
 	printWarnings(cur.Warnings)
 	return nil
 }
@@ -209,7 +209,7 @@ func cmdDiff(e env, args []string) error {
 		}
 		changes = f
 	}
-	fmt.Printf("%s %s → %s\n\n", ui.Bold("Diff"), aName, bName)
+	fmt.Printf("%s %s -> %s\n\n", ui.Bold("Diff"), aName, bName)
 	if *patch {
 		for _, c := range changes {
 			printPatch(m, e, c, aName, bName, bName == "now")
@@ -285,7 +285,7 @@ func cmdLog(e env, args []string) error {
 		g := gens[i]
 		mark := "  "
 		if g.ID == head {
-			mark = ui.Green("● ")
+			mark = ui.Green("* ")
 		}
 		fmt.Printf("%s%s  %s  %-22s %s\n", mark, ui.Bold(fmt.Sprintf("#%-3d", g.ID)),
 			g.CreatedAt.Local().Format("2006-01-02 15:04"), ui.Dim(g.Origin), g.Message)
@@ -416,7 +416,7 @@ func cmdSecrets(e env, args []string) error {
 		n := 0
 		for _, en := range cur.Entries {
 			if en.Skip == scan.SkipSecret {
-				fmt.Printf("%s ~/%s %s\n", ui.Yellow("🔒"), en.Path, ui.Dim("("+en.Reason+")"))
+				fmt.Printf("%s ~/%s %s\n", ui.Yellow("[secret]"), en.Path, ui.Dim("("+en.Reason+")"))
 				n++
 			}
 		}

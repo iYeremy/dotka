@@ -243,9 +243,9 @@ func firstLuaArg(s string) string {
 	}
 	t := strings.TrimSpace(s)
 	if t == "" {
-		return "…"
+		return "..."
 	}
-	return t + " …"
+	return t + " ..."
 }
 
 func isLuaStringLiteral(s string) bool {

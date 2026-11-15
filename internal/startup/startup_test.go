@@ -159,7 +159,7 @@ func TestXDGAndSystemd(t *testing.T) {
 	for _, i := range s {
 		m[i.Command] = true
 	}
-	if !m["eq.service → %h/.local/bin/eq-daemon"] || !m["pipewire.service"] {
+	if !m["eq.service: %h/.local/bin/eq-daemon"] || !m["pipewire.service"] {
 		t.Errorf("systemd: %+v", s)
 	}
 }

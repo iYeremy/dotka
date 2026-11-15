@@ -72,7 +72,7 @@ set -euo pipefail
 [[ -f "$HOME/.dotka-sandbox" ]] || { echo "refusing: not a sandbox home" >&2; exit 1; }
 PKGS="$1"
 cd "$HOME"
-echo ":: Installing super-rice dotfiles…"
+echo ":: Installing super-rice dotfiles..."
 
 # 1. Overwrite the Hyprland config, adding autostart entries.
 cat > .config/hypr/hyprland.lua <<'LUA'
@@ -122,7 +122,7 @@ head -c 4096 /dev/urandom > .local/share/fonts/JetBrainsMonoNerd.ttf
 # 8. "pacman -S" / "paru -S" (simulated in a text file).
 printf 'waybar\nswww\ncava aur\nttf-jetbrains-mono-nerd\n' >> "$PKGS"
 
-echo ":: Done! Log out and back in to enjoy your rice ✨"
+echo ":: Done! Log out and back in to enjoy your rice"
 EOF
 }
 

@@ -17,7 +17,7 @@ import (
 
 var version = "0.1.0-dev"
 
-const usage = `dotka — a time machine for your Linux user environment
+const usage = `dotka - a time machine for your Linux user environment
 
 Usage:
   dotka [--home DIR] [--store DIR] <command> [args]
