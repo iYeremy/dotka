@@ -2,7 +2,8 @@
 # Builds a fake $HOME to try Dotka without touching your real configuration.
 #
 #   scripts/sandbox.sh setup     create .sandbox/ with a fake Hyprland (Lua) home
-#   scripts/sandbox.sh install   run a fake third-party "install.sh" inside it
+#   scripts/sandbox.sh install   run the fake third-party installer inside it
+#                                (or: ./dotka run -- .sandbox/super-rice/install.sh)
 #   scripts/sandbox.sh env       print the exports to point dotka at the sandbox
 #   scripts/sandbox.sh clean     delete .sandbox/
 #
@@ -59,18 +60,15 @@ alias ll='ls -la'
 EOF
 
   printf 'hyprland\nkitty\ndunst\nnetwork-manager-applet\nquickshell aur\n' > "$PKGS"
-  echo "Sandbox ready at $SB"
-  echo "Next: eval \"\$($0 env)\" && ./dotka init"
-}
 
-# A fake third-party installer, like the ones in popular dotfiles repos.
-# It only writes inside the sandbox and refuses to run anywhere else.
-install() {
-  [[ -f "$FAKE_HOME/$MARKER" ]] || die "no sandbox at $SB (run: $0 setup)"
-  HOME="$FAKE_HOME" bash -s "$PKGS" <<'EOF'
+  # A fake dotfiles repo with an installer like the ones in popular rices.
+  # It only writes inside the sandbox and refuses to run anywhere else.
+  mkdir -p "$SB/super-rice"
+  cat > "$SB/super-rice/install.sh" <<'INSTALLER'
+#!/usr/bin/env bash
 set -euo pipefail
 [[ -f "$HOME/.dotka-sandbox" ]] || { echo "refusing: not a sandbox home" >&2; exit 1; }
-PKGS="$1"
+PKGS="$(cd "$(dirname "$0")/.." && pwd)/packages.txt"
 cd "$HOME"
 echo ":: Installing super-rice dotfiles..."
 
@@ -123,7 +121,16 @@ head -c 4096 /dev/urandom > .local/share/fonts/JetBrainsMonoNerd.ttf
 printf 'waybar\nswww\ncava aur\nttf-jetbrains-mono-nerd\n' >> "$PKGS"
 
 echo ":: Done! Log out and back in to enjoy your rice"
-EOF
+INSTALLER
+  chmod +x "$SB/super-rice/install.sh"
+  echo "Sandbox ready at $SB"
+  echo "Next: eval \"\$($0 env)\" && ./dotka init"
+}
+
+# Runs the fake third-party installer created by setup (without dotka).
+install() {
+  [[ -f "$FAKE_HOME/$MARKER" ]] || die "no sandbox at $SB (run: $0 setup)"
+  HOME="$FAKE_HOME" bash "$SB/super-rice/install.sh"
 }
 
 env_() {
