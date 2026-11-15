@@ -120,6 +120,9 @@ func TestFullFlowOutputIsASCII(t *testing.T) {
 	step("rollback", "1", "-y")
 	step("status")
 	step("gc")
+	step("forget", "2", "--dry-run")
+	step("prune", "--keep", "1", "-y")
+	step("log")
 
 	s := out.String()
 	for i, r := range s {

@@ -36,7 +36,9 @@ Commands:
   track [ls|add|rm] [PATH] manage tracked roots
   secrets [ls|allow|deny] [PATH]
                            files excluded because they look like secrets
-  gc                       remove unreferenced objects from the store
+  forget N [N...]          delete save points you no longer need (frees space)
+  prune [--keep 10]        forget all but the most recent generations
+  gc                       maintenance: delete stored copies no generation uses
   version
 
 Environment:
@@ -109,6 +111,10 @@ func run(args []string) error {
 		return cmdTrack(e, cargs)
 	case "secrets":
 		return cmdSecrets(e, cargs)
+	case "forget":
+		return cmdForget(e, cargs)
+	case "prune":
+		return cmdPrune(e, cargs)
 	case "gc":
 		return cmdGC(e, cargs)
 	case "version", "--version":
@@ -167,7 +173,7 @@ func sameDir(a, b string) bool {
 // writes reports whether a command writes to the store or the home.
 func writes(cmd string, args []string) bool {
 	switch cmd {
-	case "init", "snap", "snapshot", "rollback", "gc":
+	case "init", "snap", "snapshot", "rollback", "gc", "forget", "prune":
 		return true
 	case "track", "secrets":
 		return len(args) > 0 && args[0] != "ls" && args[0] != "list"

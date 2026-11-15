@@ -169,7 +169,38 @@ func (s *Store) SaveGeneration(id int, v any) error {
 	if err != nil {
 		return err
 	}
-	return fsutil.AtomicWrite(p, strings.NewReader(string(b)), 0o400)
+	if err := fsutil.AtomicWrite(p, strings.NewReader(string(b)), 0o400); err != nil {
+		return err
+	}
+	return s.bumpLastID(id)
+}
+
+// DeleteGeneration removes a generation manifest. Its objects stay in the
+// store until GC.
+func (s *Store) DeleteGeneration(id int) error {
+	err := os.Remove(s.genPath(id))
+	if errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("generation %d does not exist", id)
+	}
+	return err
+}
+
+// lastID is the highest id ever used, so ids are never reused even after
+// generations are deleted.
+func (s *Store) lastID() int {
+	b, err := os.ReadFile(filepath.Join(s.Dir, "LAST_ID"))
+	if err != nil {
+		return 0
+	}
+	n, _ := strconv.Atoi(strings.TrimSpace(string(b)))
+	return n
+}
+
+func (s *Store) bumpLastID(id int) error {
+	if id <= s.lastID() {
+		return nil
+	}
+	return fsutil.AtomicWrite(filepath.Join(s.Dir, "LAST_ID"), strings.NewReader(strconv.Itoa(id)+"\n"), 0o600)
 }
 
 // LoadGeneration reads a manifest into v.
@@ -210,10 +241,11 @@ func (s *Store) NextID() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(ids) == 0 {
-		return 1, nil
+	next := s.lastID() + 1
+	if len(ids) > 0 && ids[len(ids)-1] >= next {
+		next = ids[len(ids)-1] + 1
 	}
-	return ids[len(ids)-1] + 1, nil
+	return next, nil
 }
 
 // Head returns the generation the home is considered to be based on.
@@ -279,6 +311,20 @@ func (s *Store) Lock() (func(), error) {
 		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
 		f.Close()
 	}, nil
+}
+
+// Size returns the total size of the store on disk.
+func (s *Store) Size() int64 {
+	var total int64
+	filepath.WalkDir(s.Dir, func(_ string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() {
+			if fi, err := d.Info(); err == nil {
+				total += fi.Size()
+			}
+		}
+		return nil
+	})
+	return total
 }
 
 // ---- Garbage collection ---------------------------------------------------
