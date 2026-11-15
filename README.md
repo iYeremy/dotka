@@ -52,6 +52,9 @@ scripts/sandbox.sh clean
 `dotka startup` only reads files, so it is safe to run on your real home:
 it prints everything that runs at login or shell start.
 
+While dotka is a prototype, write commands refuse to run on your real home
+unless you set `DOTKA_ALLOW_REAL_HOME=1`.
+
 ## Commands
 
 | Command | What it does |
@@ -76,7 +79,7 @@ go test ./...
 Branches: `feat/…`, `fix/…`, `chore/…`, `docs/…`, merged into `main` with `--no-ff`.
 Commits: `type: short description` (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`).
 
-Project analysis (Spanish): [docs/ANALISIS.md](docs/ANALISIS.md)
+Docs (Spanish): [user guide and testing walkthrough](docs/GUIA.md) · [project analysis](docs/ANALISIS.md)
 
 ## License
 
