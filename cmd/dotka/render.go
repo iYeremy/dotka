@@ -37,7 +37,7 @@ func renderChanges(changes []gen.Change, limit int) {
 	for i := 0; i < len(changes); i++ {
 		c := changes[i]
 		if shown == limit {
-			fmt.Printf("  %s\n", ui.Dim(fmt.Sprintf("… %d more (use `dotka diff`)", len(changes)-i)))
+			fmt.Printf("  %s\n", ui.Dim(fmt.Sprintf("... %d more (use `dotka diff`)", len(changes)-i)))
 			break
 		}
 		// Fold whole added/removed directories.
@@ -73,9 +73,9 @@ func entryOf(c gen.Change) scan.Entry {
 func formatChange(c gen.Change) string {
 	note := ""
 	if en := entryOf(c); en.Skip == scan.SkipSecret {
-		note = " " + ui.Dim("🔒 secret, not stored")
+		note = " " + ui.Dim("[secret, not stored]")
 	} else if en.Skip == scan.SkipLarge {
-		note = " " + ui.Dim("(too large to restore)")
+		note = " " + ui.Dim("[too large to restore]")
 	}
 	switch c.Kind {
 	case gen.Added:
@@ -87,19 +87,19 @@ func formatChange(c gen.Change) string {
 	case gen.Removed:
 		return ui.Red("- ") + c.Path + note
 	case gen.TypeChg:
-		msg := fmt.Sprintf("%s → %s", c.Old.Type, c.New.Type)
+		msg := fmt.Sprintf("%s -> %s", c.Old.Type, c.New.Type)
 		warn := ""
 		if c.Old.Type == scan.TypeFile && c.New.Type == scan.TypeSymlink {
-			msg += " -> " + c.New.Target
-			warn = " " + ui.Yellow("⚠ your file was replaced by a symlink")
+			msg += ": " + c.New.Target
+			warn = " " + ui.Yellow("[!] your file was replaced by a symlink")
 		}
 		return ui.Yellow("~ ") + c.Path + " " + ui.Dim("("+msg+")") + warn + note
 	case gen.ModeChg:
-		return ui.Yellow("~ ") + c.Path + " " + ui.Dim(fmt.Sprintf("(mode %o → %o)", c.Old.Mode, c.New.Mode))
+		return ui.Yellow("~ ") + c.Path + " " + ui.Dim(fmt.Sprintf("(mode %o -> %o)", c.Old.Mode, c.New.Mode))
 	default:
 		s := c.Path
 		if c.New.Type == scan.TypeSymlink {
-			s += ui.Dim(fmt.Sprintf(" (-> %s ⇒ %s)", c.Old.Target, c.New.Target))
+			s += ui.Dim(fmt.Sprintf(" (link target %s -> %s)", c.Old.Target, c.New.Target))
 		}
 		return ui.Yellow("~ ") + s + note
 	}
@@ -141,9 +141,9 @@ func formatStartup(s gen.StartupItem) string {
 	}
 	switch s.Risk {
 	case "remote-exec":
-		out += " " + ui.Red("⚠ downloads and runs code")
+		out += " " + ui.Red("[risk: downloads and runs code]")
 	case "local-script":
-		out += " " + ui.Yellow("⚠ local script")
+		out += " " + ui.Yellow("[risk: runs a local script]")
 	}
 	return out
 }

@@ -37,7 +37,7 @@ func Unified(aName, bName string, a, b []byte, context int) string {
 	}
 	al, bl := splitLines(string(a)), splitLines(string(b))
 	if len(al) > maxLines || len(bl) > maxLines {
-		return fmt.Sprintf("Files %s and %s differ (too large for a line diff: %d → %d lines)\n", aName, bName, len(al), len(bl))
+		return fmt.Sprintf("Files %s and %s differ (too large for a line diff: %d -> %d lines)\n", aName, bName, len(al), len(bl))
 	}
 	ops := lcsOps(al, bl)
 

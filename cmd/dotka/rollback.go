@@ -64,10 +64,10 @@ func cmdRollback(e env, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n%s Restored generation #%d (%d actions).\n", ui.Green("✔"), id, len(res.Plan.Actions)-len(res.Failures))
-	fmt.Printf("  Previous state saved as %s — undo with `dotka rollback %d`.\n", ui.Bold(fmt.Sprintf("#%d", res.Pre.ID)), res.Pre.ID)
+	fmt.Printf("\n%s Restored generation #%d (%d actions).\n", ui.Green("Done."), id, len(res.Plan.Actions)-len(res.Failures))
+	fmt.Printf("  Previous state saved as %s. Undo with `dotka rollback %d`.\n", ui.Bold(fmt.Sprintf("#%d", res.Pre.ID)), res.Pre.ID)
 	if len(res.Failures) > 0 {
-		fmt.Printf("\n%s %d action(s) could not be applied:\n", ui.Yellow("⚠"), len(res.Failures))
+		fmt.Printf("\n%s %d action(s) could not be applied:\n", ui.Yellow("warning:"), len(res.Failures))
 		for _, f := range res.Failures {
 			fmt.Printf("  %s %s: %v\n", f.Action.Kind, f.Action.Path, f.Err)
 		}
@@ -92,7 +92,7 @@ func renderPlan(p gen.Plan, keepNew bool) {
 	const limit = 40
 	for i, a := range p.Actions {
 		if i == limit {
-			fmt.Printf("  %s\n", ui.Dim(fmt.Sprintf("… %d more", len(p.Actions)-limit)))
+			fmt.Printf("  %s\n", ui.Dim(fmt.Sprintf("... %d more", len(p.Actions)-limit)))
 			break
 		}
 		var sym string
@@ -102,7 +102,7 @@ func renderPlan(p gen.Plan, keepNew bool) {
 		case gen.ActMkdir:
 			sym = ui.Green("+")
 		default:
-			sym = ui.Yellow("↺")
+			sym = ui.Yellow("~")
 		}
 		path := a.Path
 		if a.Kind == gen.ActRmdir || a.Kind == gen.ActMkdir {
@@ -114,7 +114,7 @@ func renderPlan(p gen.Plan, keepNew bool) {
 		fmt.Printf("  %s %-8s %s %s\n", sym, a.Kind, path, ui.Dim("("+a.Reason+")"))
 	}
 	if len(p.Skipped) > 0 {
-		fmt.Printf("\n  %s Not touched:\n", ui.Yellow("⚠"))
+		fmt.Printf("\n  %s\n", ui.Yellow("Not touched:"))
 		for _, s := range p.Skipped {
 			fmt.Printf("    %s %s\n", s.Path, ui.Dim("("+s.Reason+")"))
 		}
@@ -128,7 +128,7 @@ func renderPlan(p gen.Plan, keepNew bool) {
 // runs package managers; it only prints commands for the user to review.
 func renderRollbackExtra(d gen.ExtraDiff) {
 	if len(d.PkgAdded)+len(d.PkgRemoved) > 0 {
-		fmt.Printf("\n%s %s\n", ui.Bold("Packages"), ui.Dim("— Dotka never changes packages. Review and run yourself:"))
+		fmt.Printf("\n%s %s\n", ui.Bold("Packages"), ui.Dim("(Dotka never changes packages; review and run these yourself)"))
 		// d is computed current → target: "added" means the target has
 		// packages that are missing now; "removed" means installed since.
 		if len(d.PkgRemoved) > 0 {

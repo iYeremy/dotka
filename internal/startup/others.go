@@ -77,7 +77,7 @@ func systemdUser(home string) ([]gen.StartupItem, []Warning) {
 		cmd := unit
 		risk := ""
 		if exec := unitExecStart(home, base, l); exec != "" {
-			cmd = unit + " → " + exec
+			cmd = unit + ": " + exec
 			risk = Risk(exec)
 		}
 		items = append(items, gen.StartupItem{

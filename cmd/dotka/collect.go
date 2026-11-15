@@ -68,9 +68,9 @@ func cmdStartup(e env, args []string) error {
 	if risky > 0 {
 		fmt.Printf(", %s", ui.Red(fmt.Sprintf("%d download and run remote code", risky)))
 	}
-	fmt.Println(ui.Dim("  — static analysis only: this is not a security audit."))
+	fmt.Println(ui.Dim(" - static analysis only, this is not a security audit."))
 	for _, w := range warns {
-		fmt.Printf("  %s %s: %v\n", ui.Yellow("⚠"), w.Path, w.Err)
+		fmt.Printf("  %s %s: %v\n", ui.Yellow("warning:"), w.Path, w.Err)
 	}
 	return nil
 }
