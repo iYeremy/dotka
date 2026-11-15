@@ -88,6 +88,9 @@ func explainOrigin(g gen.Generation) string {
 }
 
 func explainChange(c gen.Change) string {
+	if (c.New != nil && c.New.NixManaged()) || (c.Old != nil && c.Old.NixManaged()) {
+		return "This is a link into the Nix store, so home-manager (or NixOS) owns it. Dotka shows the change but never touches it when going back: use home-manager for that."
+	}
 	switch c.Kind {
 	case gen.Added:
 		if c.New.Type == scan.TypeDir {

@@ -72,7 +72,9 @@ func entryOf(c gen.Change) scan.Entry {
 
 func formatChange(c gen.Change) string {
 	note := ""
-	if en := entryOf(c); en.Skip == scan.SkipSecret {
+	if en := entryOf(c); en.NixManaged() || (c.Old != nil && c.Old.NixManaged()) {
+		note = " " + ui.Dim("[nix-managed]")
+	} else if en.Skip == scan.SkipSecret {
 		note = " " + ui.Dim("[secret, not stored]")
 	} else if en.Skip == scan.SkipLarge {
 		note = " " + ui.Dim("[too large to restore]")

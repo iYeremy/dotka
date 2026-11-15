@@ -133,6 +133,8 @@ func changeLine(all []gen.Change, c gen.Change) string {
 		s += " " + sModified.Render("[!] now a link")
 	case e.Skip == scan.SkipSecret:
 		s += " " + sMuted.Render("[secret]")
+	case e.NixManaged() || (c.Old != nil && c.Old.NixManaged()):
+		s += " " + sMuted.Render("[nix]")
 	}
 	return s
 }
