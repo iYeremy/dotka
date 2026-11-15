@@ -33,7 +33,10 @@ type Warning struct {
 
 type extractor func(home string) ([]gen.StartupItem, []Warning)
 
-var extractors = []extractor{hyprConf, hyprLua, xdgAutostart, systemdUser, shellRC}
+var extractors = []extractor{
+	hyprConf, hyprLua, sway, i3, niri, river, wayfire, scripts, kde,
+	xdgAutostart, systemdUser, shellRC,
+}
 
 // Extract runs every extractor against home.
 func Extract(home string) ([]gen.StartupItem, []Warning) {

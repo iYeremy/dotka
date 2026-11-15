@@ -40,11 +40,13 @@ type Input struct {
 	Packages []string
 	// LookPath finds a program in $PATH (exec.LookPath in production).
 	LookPath func(string) (string, error)
+	// XDGConfigHome is the value of $XDG_CONFIG_HOME ("" if unset).
+	XDGConfigHome string
 }
 
 type check func(Input) []Finding
 
-var checks = []check{missingPrograms, startupScripts, brokenSymlinks, exposedSecrets, duplicateStartup, leftoverConfigs}
+var checks = []check{missingPrograms, startupScripts, brokenSymlinks, exposedSecrets, duplicateStartup, leftoverConfigs, unsupportedWMs, xdgConfigHome}
 
 // Run executes every check and returns findings, problems first.
 func Run(in Input) []Finding {

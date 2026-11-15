@@ -3,6 +3,8 @@ package tui
 import (
 	"strings"
 
+	"github.com/iYeremy/dotka/internal/startup"
+
 	"github.com/iYeremy/dotka/internal/gen"
 	"github.com/iYeremy/dotka/internal/scan"
 )
@@ -25,6 +27,20 @@ func explainKind(kind string) string {
 		return "Hyprland runs this when you log out."
 	case strings.HasPrefix(kind, "hypr-on:"):
 		return "Hyprland runs this when the event \"" + strings.TrimPrefix(kind, "hypr-on:") + "\" happens."
+	case strings.HasSuffix(kind, "-exec-always"):
+		return "Your window manager runs this at login and again every time you reload its config (exec_always)."
+	case kind == "sway-exec" || kind == "i3-exec":
+		return "Your window manager starts this once, when you log in (an exec line in its config)."
+	case kind == "niri-startup":
+		return "niri starts this once, when you log in (spawn-at-startup in config.kdl)."
+	case kind == "river-spawn":
+		return "river starts this when your session starts (riverctl spawn in the init script)."
+	case kind == "wayfire-autostart":
+		return "Wayfire starts this at login (the [autostart] section of wayfire.ini)."
+	case kind == "bspwm-exec" || kind == "openbox-autostart" || kind == "labwc-autostart" || kind == "herbstluft-exec":
+		return "Your window manager's startup script runs this at login. Detected by reading the script, so it can miss things."
+	case kind == "kde-env-script":
+		return "Plasma runs this script at the start of every session (from ~/.config/plasma-workspace/env)."
 	case kind == "xdg-autostart":
 		return "Your desktop session starts this app at login, from a .desktop file in ~/.config/autostart."
 	case kind == "systemd-user":
@@ -105,6 +121,10 @@ func explainCheck(check string) string {
 		return "A file with passwords or tokens can be read by other users of this computer."
 	case "duplicate-startup":
 		return "The same program is started from more than one place, so it may run twice."
+	case "unsupported-wm":
+		return "dotka can't read this window manager's startup config yet, so programs it launches at login don't show up in the Startup tab."
+	case "xdg-config-home":
+		return "dotka assumes your config lives in ~/.config. Yours is somewhere else, so it may be missing from save points and checks."
 	case "leftover-config":
 		return "No installed program matches this config folder. It may be left over from an app you removed. This is a guess: double-check before deleting."
 	}
@@ -122,6 +142,14 @@ func kindTitle(kind string) string {
 		return "Runs at logout (Hyprland)"
 	case strings.HasPrefix(kind, "hypr-on:"):
 		return "Runs on a Hyprland event"
+	case strings.HasSuffix(kind, "-exec-always"):
+		return "Runs at login and on every reload"
+	case kind == "kde-env-script":
+		return "Runs at Plasma session start"
+	case kind == "sway-exec", kind == "i3-exec", kind == "niri-startup", kind == "river-spawn",
+		kind == "wayfire-autostart", kind == "bspwm-exec", kind == "openbox-autostart",
+		kind == "labwc-autostart", kind == "herbstluft-exec":
+		return "Starts at login (" + startup.Group(kind) + ")"
 	case kind == "xdg-autostart":
 		return "Starts at login (desktop autostart)"
 	case kind == "systemd-user":
@@ -151,6 +179,10 @@ func checkTitle(check string) string {
 		return "Started twice"
 	case "leftover-config":
 		return "Possible leftover"
+	case "unsupported-wm":
+		return "WM not supported yet"
+	case "xdg-config-home":
+		return "Config is not in ~/.config"
 	}
 	return check
 }

@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"os"
 	"os/exec"
 
 	"github.com/iYeremy/dotka/internal/config"
@@ -17,7 +18,8 @@ func Collect(home string, cfg config.Config) (Input, error) {
 		return Input{}, err
 	}
 	items, _ := startup.Extract(home)
-	in := Input{Home: home, Entries: res.Entries, Startup: items, LookPath: exec.LookPath}
+	in := Input{Home: home, Entries: res.Entries, Startup: items, LookPath: exec.LookPath,
+		XDGConfigHome: os.Getenv("XDG_CONFIG_HOME")}
 	if src := pkgs.FromEnv(); src != nil {
 		if all, err := src.All(); err == nil {
 			in.Packages = all
