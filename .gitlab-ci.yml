@@ -1,0 +1,13 @@
+image: golang:1.24
+
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+    - go vet ./...
+    - go test -race -count=1 ./...
+    - go build -trimpath -ldflags "-X main.version=ci-${CI_COMMIT_SHORT_SHA}" -o dotka ./cmd/dotka
+    - ./dotka version
