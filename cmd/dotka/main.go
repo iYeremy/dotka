@@ -28,6 +28,8 @@ Commands:
   status                   what changed since the current generation
   diff [A [B]] [--path P] [--patch]
                            compare generations (default: HEAD vs now)
+  run [-m MSG] -- CMD...    snapshot, run CMD, snapshot, and show what CMD changed
+  why THING                where a file, package or startup item came from
   rollback N [--dry-run] [--yes] [--keep-new]
                            restore generation N (reversible)
   log                      list generations
@@ -64,6 +66,10 @@ type env struct {
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, "dotka:", err)
+		var ee exitError
+		if errors.As(err, &ee) {
+			os.Exit(ee.code)
+		}
 		os.Exit(1)
 	}
 }
@@ -103,6 +109,10 @@ func run(args []string) error {
 		return cmdDiff(e, cargs)
 	case "rollback":
 		return cmdRollback(e, cargs)
+	case "run":
+		return cmdRun(e, cargs)
+	case "why":
+		return cmdWhy(e, cargs)
 	case "log":
 		return cmdLog(e, cargs)
 	case "show":
@@ -177,7 +187,7 @@ func sameDir(a, b string) bool {
 // writes reports whether a command writes to the store or the home.
 func writes(cmd string, args []string) bool {
 	switch cmd {
-	case "init", "snap", "snapshot", "rollback", "gc", "forget", "prune":
+	case "init", "snap", "snapshot", "rollback", "gc", "forget", "prune", "run":
 		return true
 	case "track", "secrets":
 		return len(args) > 0 && args[0] != "ls" && args[0] != "list"
