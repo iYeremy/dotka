@@ -244,9 +244,6 @@ DOTKA_TUI_TEST_HOME=$PWD/.sandbox/home go test ./internal/tui -run Real -v   # U
 go test ./internal/tui -update                                              # regenerate UI golden files
 ```
 
-Branches are `feat/...`, `fix/...`, `chore/...`, `docs/...`, merged into `main` with
-`--no-ff`. Commits look like `type: short description`.
-
 ## License
 
 MIT
