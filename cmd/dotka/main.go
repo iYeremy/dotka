@@ -32,11 +32,15 @@ Commands:
                            restore generation N (reversible)
   log                      list generations
   show N                   details of a generation
+  startup                  everything that runs at login / shell start
   track [ls|add|rm] [PATH] manage tracked roots
   secrets [ls|allow|deny] [PATH]
                            files excluded because they look like secrets
   gc                       remove unreferenced objects from the store
   version
+
+Environment:
+  DOTKA_PACKAGES   pacman (default) | off | file:PATH (fake list for demos)
 
 Global options (also DOTKA_HOME / DOTKA_STORE):
   --home DIR    home directory to manage (default: $HOME)
@@ -92,6 +96,8 @@ func run(args []string) error {
 		return cmdLog(e, cargs)
 	case "show":
 		return cmdShow(e, cargs)
+	case "startup":
+		return cmdStartup(e, cargs)
 	case "track":
 		return cmdTrack(e, cargs)
 	case "secrets":
@@ -161,7 +167,7 @@ func (e env) managerWith(s *store.Store, cfg config.Config) *gen.Manager {
 
 var lookPath = exec.LookPath
 
-// collector gathers packages and the startup map. Set in collect.go.
+// collector gathers packages and the startup map (see collect.go).
 var collector gen.Collector
 
 // homeRel converts a user-supplied path (absolute, ~/..., or home-relative)
