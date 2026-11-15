@@ -44,6 +44,7 @@ func cmdRollback(e env, args []string) error {
 		return err
 	}
 	ed := gen.DiffExtra(cur.Extra, plan.Target.Extra)
+	fmt.Printf("%s %s\n", ui.Dim("Home:"), e.home)
 	renderPlan(plan, *keepNew)
 	renderRollbackExtra(ed)
 
