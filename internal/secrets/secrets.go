@@ -3,6 +3,7 @@
 package secrets
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -39,21 +40,28 @@ var knownDirs = []string{".ssh", ".gnupg", ".password-store", ".local/share/keyr
 
 type pattern struct {
 	name string
-	re   *regexp.Regexp
+	// hints are lowercase literals; the (slow) regexp only runs when the
+	// file contains at least one of them. Most files contain none.
+	hints []string
+	re    *regexp.Regexp
 }
 
 var contentPatterns = []pattern{
-	{"private key", regexp.MustCompile(`-----BEGIN [A-Z ]*PRIVATE KEY-----`)},
-	{"GitHub token", regexp.MustCompile(`\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b|\bgithub_pat_[A-Za-z0-9_]{40,}`)},
-	{"GitLab token", regexp.MustCompile(`\bglpat-[A-Za-z0-9_\-]{20,}`)},
-	{"Slack token", regexp.MustCompile(`\bxox[baprs]-[A-Za-z0-9-]{10,}`)},
-	{"AWS access key", regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`)},
-	{"API key", regexp.MustCompile(`\bsk-(ant-)?[A-Za-z0-9_\-]{24,}`)},
-	{"password assignment", regexp.MustCompile(`(?im)^\s*(password|passwd|pass)\s*[=:]\s*["']?[^\s"'$]{4,}`)},
+	{"private key", []string{"private key"}, regexp.MustCompile(`-----BEGIN [A-Z ]*PRIVATE KEY-----`)},
+	{"GitHub token", []string{"ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_"},
+		regexp.MustCompile(`\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b|\bgithub_pat_[A-Za-z0-9_]{40,}`)},
+	{"GitLab token", []string{"glpat-"}, regexp.MustCompile(`\bglpat-[A-Za-z0-9_\-]{20,}`)},
+	{"Slack token", []string{"xox"}, regexp.MustCompile(`\bxox[baprs]-[A-Za-z0-9-]{10,}`)},
+	{"AWS access key", []string{"akia"}, regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`)},
+	{"API key", []string{"sk-"}, regexp.MustCompile(`\bsk-(ant-)?[A-Za-z0-9_\-]{24,}`)},
+	{"password assignment", []string{"pass"}, regexp.MustCompile(`(?im)^\s*(password|passwd|pass)\s*[=:]\s*["']?[^\s"'$]{4,}`)},
 }
 
-// maxScan bounds how much of a file is inspected.
-const maxScan = 256 << 10
+// maxScan bounds how much of a text file is inspected; binaries get less.
+const (
+	maxScan       = 256 << 10
+	maxBinaryScan = 64 << 10
+)
 
 // IsSecretDir reports whether rel is (inside) a directory that is never tracked.
 func IsSecretDir(rel string) bool {
@@ -94,10 +102,30 @@ func CheckContent(path string) (bool, string) {
 	if err != nil {
 		return false, ""
 	}
+	head := b
+	if len(head) > 8192 {
+		head = head[:8192]
+	}
+	if bytes.IndexByte(head, 0) >= 0 && len(b) > maxBinaryScan {
+		b = b[:maxBinaryScan] // binary file: credentials, if any, are near the start
+	}
+	lower := bytes.ToLower(b)
 	for _, p := range contentPatterns {
+		if !containsAny(lower, p.hints) {
+			continue
+		}
 		if p.re.Match(b) {
 			return true, "contains " + p.name
 		}
 	}
 	return false, ""
+}
+
+func containsAny(b []byte, hints []string) bool {
+	for _, h := range hints {
+		if bytes.Contains(b, []byte(h)) {
+			return true
+		}
+	}
+	return false
 }
