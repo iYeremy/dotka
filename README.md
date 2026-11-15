@@ -66,6 +66,8 @@ unless you set `DOTKA_ALLOW_REAL_HOME=1`.
 | `rollback N [--dry-run] [--yes] [--keep-new]` | restore generation N (reversible) |
 | `log`, `show N` | list / inspect generations |
 | `startup` | startup map: Hyprland (Lua and conf), XDG autostart, systemd --user, shell rc |
+| `doctor` | read-only health check: missing startup programs, startup scripts that download code or use sudo, broken symlinks, exposed secrets, duplicates, leftover configs |
+| `forget N`, `prune --keep N` | delete old generations and free their space |
 | `track ls/add/rm PATH` | manage tracked roots |
 | `secrets ls/allow/deny PATH` | files excluded because they look like credentials |
 | `gc` | delete unreferenced objects |

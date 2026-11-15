@@ -79,6 +79,8 @@ type Options struct {
 	// Store, when non-nil, receives the content of every regular file
 	// (snapshot mode). When nil, files are only hashed (status mode).
 	Store *store.Store
+	// NoHash skips reading file contents (fast, metadata-only scans).
+	NoHash bool
 	// Previous entries used as a hash cache: if size, mtime and mode are
 	// unchanged the previous hash is reused instead of re-reading the file.
 	Previous map[string]Entry
@@ -191,6 +193,10 @@ func entryFor(opt Options, full, rel string, d fs.DirEntry) (Entry, bool, error)
 			e.Skip, e.Reason = SkipSecret, why
 			return e, true, nil
 		}
+	}
+
+	if opt.NoHash {
+		return e, true, nil
 	}
 
 	large := e.Size > opt.Config.MaxFileSize

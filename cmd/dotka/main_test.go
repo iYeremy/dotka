@@ -114,6 +114,7 @@ func TestFullFlowOutputIsASCII(t *testing.T) {
 	step("log")
 	step("show", "2")
 	step("startup")
+	step("doctor")
 	step("secrets")
 	step("track")
 	step("rollback", "1", "--dry-run")
@@ -131,7 +132,7 @@ func TestFullFlowOutputIsASCII(t *testing.T) {
 			t.Fatalf("non-ASCII rune %q in output near: %q", r, s[start:min(i+20, len(s))])
 		}
 	}
-	for _, want := range []string{"[risk: downloads and runs code]", "[!] your file was replaced by a symlink", "[secret]", "Done. Restored generation #1"} {
+	for _, want := range []string{"[risk: downloads and runs code]", "[problem]", "[!] your file was replaced by a symlink", "[secret]", "Done. Restored generation #1"} {
 		if !strings.Contains(s, want) {
 			t.Errorf("expected %q in output", want)
 		}

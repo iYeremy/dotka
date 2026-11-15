@@ -33,6 +33,8 @@ Commands:
   log                      list generations
   show N                   details of a generation
   startup                  everything that runs at login / shell start
+  doctor                   health check: missing programs, risky startup
+                           scripts, broken links, exposed secrets, leftovers
   track [ls|add|rm] [PATH] manage tracked roots
   secrets [ls|allow|deny] [PATH]
                            files excluded because they look like secrets
@@ -107,6 +109,8 @@ func run(args []string) error {
 		return cmdShow(e, cargs)
 	case "startup":
 		return cmdStartup(e, cargs)
+	case "doctor":
+		return cmdDoctor(e, cargs)
 	case "track":
 		return cmdTrack(e, cargs)
 	case "secrets":

@@ -22,6 +22,9 @@ type StartupItem struct {
 	Line       int    `json:"line,omitempty"`
 	Confidence string `json:"confidence"`     // "confirmed" | "heuristic"
 	Risk       string `json:"risk,omitempty"` // e.g. "remote-exec", "local-script"
+	// Dynamic is true when the command is computed (a Lua expression or
+	// variable) rather than a literal, so its program cannot be checked.
+	Dynamic bool `json:"dynamic,omitempty"`
 }
 
 // Key identifies a startup item across generations (line numbers move).
