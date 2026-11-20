@@ -6,20 +6,35 @@ on:
   push:
     branches: ['**']
     tags: ['**']
+  workflow_dispatch:
 
 jobs:
   gitlab:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: push to gitlab
+      - name: set up ssh key
         env:
           SSH_KEY: ${{ secrets.GITLAB_SSH_KEY }}
         run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "::error::secret GITLAB_SSH_KEY is missing or empty"
+            exit 1
+          fi
           mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+          if ! ssh-keygen -lf ~/.ssh/id_ed25519; then
+            echo "::error::GITLAB_SSH_KEY is not a valid private key (copy the whole file, BEGIN and END lines included)"
+            exit 1
+          fi
+          ssh-keyscan -t ed25519 gitlab.com >> ~/.ssh/known_hosts 2>/dev/null
+      - name: check access
+        run: |
+          # GitLab answers "Welcome to GitLab, @..." when the key is accepted.
+          ssh -o BatchMode=yes -T git@gitlab.com || true
+      - name: push to gitlab
+        run: |
           git push git@gitlab.com:iYeremy/dotka.git "$GITHUB_SHA:$GITHUB_REF"
